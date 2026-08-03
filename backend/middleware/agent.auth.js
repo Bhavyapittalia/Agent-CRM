@@ -46,8 +46,10 @@ export const checkClientOwnership = async (req, res, next) => {
 
     try {
         const client = await Client.findById(req.params.clientId)
-    
-        console.log("agent Id in the middlware is: ", client)
+
+        console.log("client in middlware is: ", client)
+        console.log("agentId in check owner is: ", req.agent.agentId)
+        console.log("client Id in the middlware is: ", client._id)   
     
         if (client.agentId.toString() !== req.agent.agentId) {
             return res.status(404).json({

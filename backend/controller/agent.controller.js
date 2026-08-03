@@ -11,8 +11,10 @@ export const registerAgent = async (req, res) => {
     try {
         console.log("request body is: ", req.body)
         const parsedBody = AgentRegisterSchema.parse(req.body)
-
+        console.log("parsed body is runned: ", parsedBody)
+        
         const agent = await Agent.create(parsedBody)
+        console.log("agent is created runned")
 
         console.log("agents are: ", agent)
 
@@ -26,7 +28,7 @@ export const registerAgent = async (req, res) => {
         if (error instanceof z.ZodError) {
             return res.status(400).send({
                 success: false,
-                error: error.message,
+                error: "error is from user side",
                 stack: error.stack
             })
         }
@@ -56,9 +58,11 @@ export const loginAgent = async (req, res) => {
             })
         }
 
+        console.log("this agent id in the token is going: ", agent._id)
         const token = jwt.sign(
             {
-                // will be useful when we need to assign client with agentId wise 
+                // will be useful when we need to assign client with agentId wise
+                // here we are putting the agentId in the token PAYLOAD 
                 agentId: agent._id
             },
             process.env.JWT_SECRET
@@ -69,7 +73,7 @@ export const loginAgent = async (req, res) => {
             token,
             // we can access now agentId with "req.agent.agentId"
             // but not actually this is doing everything go to the middlware decoded variable 
-            agent
+            // agent
         })
 
     }

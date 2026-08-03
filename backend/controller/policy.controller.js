@@ -10,8 +10,9 @@ export const addPolicy = async (req, res) => {
     // we have created the clientId in the route "/policy/add-policy/:clientId"<---
     // so  clientId:  req.params.clientId
     //        ^                         ^
-    //        |-> is created in schema  |--> and this clientId is created in route    
-    const policy = await Policy.create({ ...req.body, clientId: req.params.clientId })
+    //        |-> is created in schema  |--> and this clientId is created in route 
+    
+    const policy = await Policy.create({ ...req.body, clientId: req.params.clientId, agentId: req.agent.agentId })
 
     
     console.log("policy client and his id is: ", policy)
@@ -62,7 +63,7 @@ export const policyMoreInfo = async (req, res) => {
     try {
 
         // if we populate "clientId" we can have access now to the "agentId" as well
-        const policy = await Policy.findById(req.params.policyId).populate("clientId")
+        const policy = await Policy.findById(req.params.policyId).populate("clientId", "name agentId")
 
         console.log("loggedIn Agent: ", req.agent.agentId)  
         console.log("Policy AgentId is: " ,policy.clientId.agentId)
@@ -102,7 +103,10 @@ export const editPolicy = async (req, res) => {
     console.log("updated policy data is: ", req.body)
     
     try {
-        const policy = await Policy.findByIdAndUpdate(req.params.policyId, req.body, {new: true})
+
+        // we also need to populate the clientId as we are passing the client details as well to "access the client name" 
+        // as we only want to fetch only the clientID and it's client name so we use projection .populate("", "")
+        const policy = await Policy.findByIdAndUpdate(req.params.policyId, req.body, {new: true}).populate("clientId", "name")
     
         return res.status(202).json({
             success: true,

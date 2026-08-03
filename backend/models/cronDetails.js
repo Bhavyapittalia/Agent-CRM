@@ -36,9 +36,26 @@ const cronSchema = new mongoose.Schema({
 
         clientName: {
             type: String
-        }
+        },
 
-    }]
+        alertedOn: {
+            type: Date
+        },
+
+        agentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Agent",
+            // required: true
+        },
+
+    }],
+
+    // agentId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Agent",
+    //     // required: true
+    // },
+
 }, { timestamps: true })
 
 export const Cron = mongoose.model("Cron", cronSchema)

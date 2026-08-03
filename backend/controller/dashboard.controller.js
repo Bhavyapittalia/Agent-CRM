@@ -14,43 +14,52 @@ export const dashboardSummery = async (req, res) => {
     // finding total clients of one agent
     const totalClients = await Client.countDocuments({ agentId: req.agent.agentId })
 
-    // finding total policies of one agent
+    // finding total policies of one agent with their details
     const clients = await Client.find({ agentId: req.agent.agentId }, "_id")
     console.log("all the clients Id's  are: ", clients)
 
-    // const clientIds = clients.map( (client) => client._id)
-    // console.log(clientIds)
+    // const totalPolicies = await Policy.countDocuments({
+    //     clientId: {
+    //         $in: clients
+    //     }
+    // })
 
     const totalPolicies = await Policy.countDocuments({
-        clientId: {
-            $in: clients
-        }
+        agentId: req.agent.agentId
     })
 
     // finding the total policies which have "Due today" 
     const startDate = new Date()
     startDate.setHours(0, 0, 0, 0)
 
-    console.log("start TIME is: ", startDate)
-
     const endDate = new Date()
     endDate.setHours(23, 59, 59, 999)
 
-    console.log("end TIME is: ", endDate)
-
-    const dueToday = await Policy.countDocuments({ nextPaymentDate: { $gte: startDate, $lte: endDate } })
-    console.log("How many policies are there whose dues are today? : ", dueToday)
+    const dueToday = await Policy.countDocuments({ agentId: req.agent.agentId, nextPaymentDate: { $gte: startDate, $lte: endDate } })
 
 
     // finding total policies which have "Due This Week" 
+    const dueThisWeek = await Policy.countDocuments({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } })
 
-    const dueThisWeek = await Policy.countDocuments({ nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } })
-    console.log("total policies due this week are: ", dueThisWeek)
 
-    // finding the lastest cron execution
-    const lastCron = await Cron.find({ createdAt: { $gte: startDate, $lte: endDate } }, {_id: 0, createdAt: 1, policiesDetail: 1}).sort({ createdAt: -1 })
-    console.log("last cron created at: ", lastCron)
+    // finding the lastest last one day cron execution
+    const lastOneDayCron = await Cron.find({ createdAt: { $gte: startDate, $lte: endDate } }, { _id: 0, createdAt: 1, policiesDetail: 1 }).sort({ createdAt: -1 })
 
+
+    // filtering out the policies by comparing with the policy.agentId == req.agent.agentId
+    const filteredCron = lastOneDayCron.map((cron) => {
+
+        const filteredPolicies = cron.policiesDetail.filter((policy) => {
+            return policy.agentId == req.agent.agentId
+        })
+
+        return {
+            // now in policiesDetail we are storing only this req.agent.agentId policies and cron data and others agent's policy and cron data is removed   
+            policiesDetail: filteredPolicies
+        }
+    })
+
+    console.log("last cron created at: ", lastOneDayCron)
 
     return res.status(200).json({
         success: true,
@@ -58,18 +67,23 @@ export const dashboardSummery = async (req, res) => {
         totalPolicies,
         dueToday,
         dueThisWeek,
-        lastCron
+        filteredCron
     })
 }
 
 export const upcomingRemainder = async (req, res) => {
-    // finding the details of all the policies which have due today
-    const todayPolicies = await Policy.find({ nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } }).populate("clientId").sort({ nextPaymentDate: 1 })
+
+    console.log("Logged Agent ID:", req.agent.agentId);
+    // finding the details of all the policies which have due in this week
+    const todayPolicies = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } }).populate("clientId").sort({ nextPaymentDate: 1 })
+    console.log("todayPolicies data are: ", todayPolicies)
 
     // console.log("details of all the policies which have due in this week: ", todayPolicies)
 
     const policyInfo = todayPolicies.map((policy) => {
         return {
+            policyId: policy._id,
+            clientId: policy.clientId._id,
             clientName: policy.clientId.name,
             email: policy.clientId.email,
             policyNumber: policy.policyNumber,
@@ -83,4 +97,54 @@ export const upcomingRemainder = async (req, res) => {
         success: true,
         policyInfo
     })
+}
+
+
+export const getDashboardCardPolicies = async (req, res) => {
+    const search = req.query.search
+
+    if (search === "due-today") {
+        // finding the total policies which have "Due today" 
+        const startDate = new Date()
+        startDate.setHours(0, 0, 0, 0)
+
+        const endDate = new Date()
+        endDate.setHours(23, 59, 59, 999)
+
+        const todayPoliciesData = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: startDate, $lte: endDate } })
+
+        return res.status(202).json({
+            success: true,
+            search,
+            todayPoliciesData
+        })
+    }
+
+    if (search === "due-this-week") {
+
+        const thisWeekPoliciesData = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } })
+
+        return res.status(202).json({
+            success: true,
+            thisWeekPoliciesData
+        })
+    }
+
+    if (search === "total-policies") {
+
+        const detailsOfAllPolicies = await Policy.find({ agentId: req.agent.agentId })
+
+        console.log("details of all policies is: ", detailsOfAllPolicies)
+
+        return res.status(202).json({
+            success: true,
+            detailsOfAllPolicies
+        })
+    }
+
+    return res.status(404).json({
+        success: false,
+        error: "wrong filtering"
+    })
+
 }

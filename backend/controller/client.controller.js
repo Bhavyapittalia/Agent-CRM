@@ -7,6 +7,7 @@ export const addClient = async (req, res) => {
     try {
 
         console.log("clients data entered by users are: ", req.body)
+        console.log("agentId in the client creating API is: ", req.agent.agentId)
 
         // here req.agent means we have already passed an "agent" from loginAgent route 
         // so we can access it by "agentId: req.agent.agentId" and passing it to the agentId that we created in clientSchema

@@ -2,10 +2,10 @@ import cron from 'node-cron'
 import { Policy } from '../models/policy.js'
 import { Cron } from '../models/cronDetails.js'
 
-console.log("corn file is running")
 
 cron.schedule("10 * * * *", async () => {
-
+    
+    console.log("corn file is running")
     console.log("fetching all the policies")
 
     const policyDetail = []
@@ -28,7 +28,7 @@ cron.schedule("10 * * * *", async () => {
 
     polycies.forEach( (policy) => {
 
-        policyDetail.push({ policyId: policy._id, policyName: policy.policyName, amount: policy.policyAmount, dueDate: policy.nextPaymentDate, clientName: policy.clientId.name })
+        policyDetail.push({ policyId: policy._id, policyName: policy.policyName, amount: policy.policyAmount, dueDate: policy.nextPaymentDate, clientName: policy.clientId.name, agentId: policy.agentId, alertedOn: new Date()})
         console.log(policyDetail)
 
     })

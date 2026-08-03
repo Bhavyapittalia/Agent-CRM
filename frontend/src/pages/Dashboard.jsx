@@ -12,6 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+
 import {
     ScrollArea,
     ScrollBar
@@ -30,7 +31,6 @@ const Dashboard = () => {
 
     const navigate = useNavigate()
 
-
     const getSummery = async () => {
 
         try {
@@ -44,17 +44,18 @@ const Dashboard = () => {
 
             // as policies data is inside res.data.lastCron.policiesData
             // that wise we need to do first flatMap and then map to access the policiesData
-            const alerts = response.data.lastCron.flatMap((cron) =>
+            const alerts = response.data.filteredCron.flatMap((cron) =>
                 cron.policiesDetail.map((policy) => ({
                     clientName: policy.clientName, // clientname is added afterwards in cronSchema.policiesDetail 
                     amount: policy.amount,
                     dueDate: policy.dueDate,
-                    alertedOn: cron.createdAt,
+                    alertedOn: policy.alertedOn,
                     policyName: policy.policyName
                 }))
             );
 
             setAlert(alerts);
+
 
             console.log("LAST alert history is: ", alerts)
 
@@ -97,6 +98,7 @@ const Dashboard = () => {
         }
     ]
 
+    // for upcoming remainder date filter
     const filteredRemainders = thisWeekRemainder.filter((item) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -135,10 +137,16 @@ const Dashboard = () => {
                             key={label}
                             className="border-t-4 border-t-blue-600 shadow-sm rounded-lg ring-0 w-full"
                         >
-                            <CardContent className="pt-5 pb-5">
+                            <CardContent className="pt-5">
                                 <p className="text-xs text-slate-500 mb-1"> {label} </p>
                                 <p className="text-2xl font-semibold text-slate-900"> {value ?? "0"} </p>
                             </CardContent>
+                                <Button onClick={() => {
+                                    label === "Total Clients" ? navigate("/clients") 
+                                : label === "Total Policies" ? navigate("/clients/policies?search=total-policies")
+                                : label === "Due Today" ? navigate("/clients/policies?search=due-today")
+                                : label === "Due This Week" ? navigate("/clients/policies?search=due-this-week"): null
+                                }} className="text-xs text-blue-500 font-semibold flex  justify-center mb-0 p-0 ring-0"> View </Button>
                         </Card>
                     ))}
                 </div>
@@ -168,7 +176,7 @@ const Dashboard = () => {
                             <Table className="">
                                 <TableHeader>
                                     <TableRow className="bg-blue-100 border-blue-200">
-                                        <TableHead className='flex  justify-between items-center'>Client Name</TableHead>
+                                        <TableHead className='flex  justify-between items-center'> Client Name </TableHead>
                                         <TableHead className="">Next Payment Date</TableHead>
                                         <TableHead className="text-right">Amount</TableHead>
                                     </TableRow>
@@ -179,7 +187,7 @@ const Dashboard = () => {
                                 <Table>
                                     <TableBody >
                                         {filteredRemainders.map((item) => (
-                                            <TableRow key={item._id} className="border-y-blue-200">
+                                            <TableRow key={item._id} className="border-y-blue-200 cursor-pointer hover:bg-blue-200" onClick={() => navigate(`/clients/policy/more-info/${item.clientId}/${item.policyId}`)}>
                                                 <TableCell className="text-left">{item.clientName}</TableCell>
                                                 <TableCell className=""> {new Date(item.nextPaymentDate).toLocaleDateString()} </TableCell>
                                                 <TableCell className="text-right"> ₹ {item.Amount.toLocaleString("en-IN")}</TableCell>
@@ -187,6 +195,8 @@ const Dashboard = () => {
                                         ))}
                                     </TableBody>
                                 </Table>
+
+
 
                                 <ScrollBar orientation="vertical" />
                             </ScrollArea>

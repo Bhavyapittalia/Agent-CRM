@@ -9,7 +9,7 @@ const agentSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true,
+        // unique: true,
         trim: true,
         lowercase: true,
     },
@@ -30,15 +30,9 @@ const agentSchema = new mongoose.Schema({
         default: null,
     },
 
-    agentCode: {
-        type: String,
-        unique: true,
-        trim: true, // Unique LIC-assigned agent code
-    },
-
     branch: {
         type: String,
-        trim: true, // LIC branch name/code
+        trim: true,
     },
 
     role: {
@@ -48,12 +42,12 @@ const agentSchema = new mongoose.Schema({
     },
 
 
-    clients: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Client',
-        },
-    ],
+    // clients: [
+    //     {
+    //         type: mongoose.Schema.Types.ObjectId,
+    //         ref: 'Client',
+    //     },
+    // ],
 })
 
 export const Agent = mongoose.model("Agent", agentSchema)

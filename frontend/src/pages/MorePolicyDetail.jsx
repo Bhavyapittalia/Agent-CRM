@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, File, FileText, Pencil } from "lucide-react";
 import { Input } from "@base-ui/react";
 import { toast } from "sonner";
 import { formatDate } from "@/utils/format.date";
@@ -27,7 +27,8 @@ const MorePolicyDetail = () => {
         nextPaymentDate: "",
         lastPremiumPaidDate: "",
         policyStartDate: "",
-        policyMaturityDate: ""
+        policyMaturityDate: "",
+        clientId: "",
     });
 
 
@@ -41,11 +42,12 @@ const MorePolicyDetail = () => {
         try {
             const response = await api.get(`/policy/more-info/${id}`);
 
-            console.log(response.data);
-
             setPolicy({ ...response.data.policy, nextPaymentDate: formatDate(response.data.policy.nextPaymentDate), lastPremiumPaidDate: formatDate(response.data.policy.lastPremiumPaidDate), policyStartDate: formatDate(response.data.policy.policyStartDate), policyMaturityDate: formatDate(response.data.policy.policyMaturityDate) })
+
+            console.log("before updated policy data: ", response.data.policy)
+
         } catch (error) {
-            console.log(error.response);
+            console.log(error.response.data);
             console.log(error.message);
         }
     };
@@ -56,12 +58,21 @@ const MorePolicyDetail = () => {
 
     const updatePolicy = async () => {
 
-        const response = await api.put(`/policy/more-info/${id}`, { policyNumner: policy.policyNumber, policyName: policy.policyName, planType: policy.planType, policyStatus: policy.policyStatus })
-        setPolicy(response.data.policy);
+        console.log("update policy function is running/.. ")
 
-        console.log("updated policy details are: ", response.data.policy)
+        try {
+            const response = await api.patch(`/policy/more-info/${id}/edit`, { policyNumber: policy.policyNumber, policyName: policy.policyName, planType: policy.planType, policyStatus: policy.policyStatus,  nextPaymentDate: formatDate(policy.nextPaymentDate), lastPremiumPaidDate: formatDate(policy.lastPremiumPaidDate), policyStartDate: formatDate(policy.policyStartDate) })
 
-        toast.success("policy updated successfully")
+            setPolicy({...response.data.policy, nextPaymentDate: formatDate(response.data.policy.nextPaymentDate), lastPremiumPaidDate: formatDate(response.data.policy.lastPremiumPaidDate), policyStartDate: formatDate(response.data.policy.policyStartDate), policyMaturityDate: formatDate(response.data.policy.policyMaturityDate) });
+    
+            console.log("updated policy details are: ", response.data.policy)
+    
+            toast.success("policy updated successfully")
+        }
+        catch (error) {
+            console.log("error is: ", error.message)
+            console.log("error is: ", error.response)
+        }
     }
 
     const handleChange = (e) => {
@@ -79,7 +90,7 @@ const MorePolicyDetail = () => {
             <div className="max-w-3xl mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                     <h3 className="text-xl font-semibold text-slate-900">
-                        policy More Information
+                       {policy.clientId.name}, {policy.policyName}
                     </h3>
                 </div>
 
@@ -147,7 +158,7 @@ const MorePolicyDetail = () => {
 
                             <div>
                                 <div className="flex flex-col">
-                                    <p className="text-sm text-slate-500"> Plan Type </p>
+                                    <p className="text-sm text-slate-500"> Policy Status </p>
 
                                     <select
                                         name="policyStatus"
@@ -364,7 +375,8 @@ const MorePolicyDetail = () => {
 
                     <Button
                         variant="outline"
-                        onClick={() => navigate(`/clients/policy/${clientId}`)}
+                        // onClick={() => navigate(`/clients/policy/${clientId}`)}
+                        onClick={() => navigate(-1)}
                     >
                         Back
                     </Button>
@@ -373,8 +385,8 @@ const MorePolicyDetail = () => {
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                         onClick={updatePolicy}
                     >
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit Policy
+                        <FileText className="h-4 w-4 mr-2" />
+                        Save Changes
                     </Button>
 
                 </div>
