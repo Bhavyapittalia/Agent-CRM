@@ -9,13 +9,9 @@ import AddClients from './pages/AddClients'
 import Policy from './pages/Policy'
 import AddPolicy from './pages/AddPolicy'
 import MorePolicyDetail from './pages/MorePolicyDetail'
-import EditPolicy from './pages/EditPolicy'
 
 import { toast, Toaster } from 'sonner'
-import EditClient from './pages/EditClient'
-import AllPoliciesDetails from './pages/AllPoliciesDetails'
-import DueToday from './pages/DueToday'
-import CardPolicies from './pages/CardPolicies'
+import PolicyList from './pages/PolicyList'
 
 function App() {
 
@@ -57,16 +53,8 @@ function App() {
             <MorePolicyDetail />
           } />
 
-          <Route path="/clients/policy/more-info/edit/:clientId/:id" element={
-            <EditPolicy />
-          } />
-
-          <Route path="/clients/edit/:clientId" element={
-            <EditClient />
-          } />
-
           <Route path="/clients/policies" element={
-            <CardPolicies />
+            <PolicyList />
           } />
 
         </Routes>

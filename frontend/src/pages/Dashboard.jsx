@@ -3,21 +3,11 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
 
-import {
-    ScrollArea,
-    ScrollBar
-} from "@/components/ui/scroll-area"
-import { FileText } from 'lucide-react'
+import DashboardCard from '@/components/dashboard/DashboardCard.jsx'
+import RemainderTable from '@/components/dashboard/RemainderTable.jsx'
+import AlertTable from '@/components/dashboard/AlertTable.jsx'
+
 
 const Dashboard = () => {
 
@@ -83,18 +73,25 @@ const Dashboard = () => {
         {
             label: "Total Clients",
             value: summery.totalClients,
+            action: () => navigate("/clients")
         },
+
         {
             label: "Total Policies",
             value: summery.totalPolicies,
+            action: () => navigate("/clients/policies?search=total-policies")
         },
+
         {
             label: "Due Today",
             value: summery.dueToday,
+            action: () => navigate("/clients/policies?search=due-today")
         },
+
         {
             label: "Due This Week",
-            value: summery.dueThisWeek
+            value: summery.dueThisWeek,
+            action: () => navigate("/clients/policies?search=due-this-week")
         }
     ]
 
@@ -116,8 +113,8 @@ const Dashboard = () => {
     console.log("filtered data is: ", filteredRemainders)
 
     return (
-        <div className="min-h-screen bg-slate-100 px-6 py-8 w-[100%]">
-            <div className="max-w-5xl mx-auto">
+        <div className="min-h-screen bg-slate-100 px-6 py-8 w-full">
+            <div className="max-w-7xl  mx-auto w-full">
 
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-semibold text-slate-900">
@@ -132,128 +129,31 @@ const Dashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {stats.map(({ label, value }) => (
-                        <Card
-                            key={label}
-                            className="border-t-4 border-t-blue-600 shadow-sm rounded-lg ring-0 w-full"
-                        >
-                            <CardContent className="pt-5">
-                                <p className="text-xs text-slate-500 mb-1"> {label} </p>
-                                <p className="text-2xl font-semibold text-slate-900"> {value ?? "0"} </p>
-                            </CardContent>
-                                <Button onClick={() => {
-                                    label === "Total Clients" ? navigate("/clients") 
-                                : label === "Total Policies" ? navigate("/clients/policies?search=total-policies")
-                                : label === "Due Today" ? navigate("/clients/policies?search=due-today")
-                                : label === "Due This Week" ? navigate("/clients/policies?search=due-this-week"): null
-                                }} className="text-xs text-blue-500 font-semibold flex  justify-center mb-0 p-0 ring-0"> View </Button>
-                        </Card>
+                    {stats.map(( item ) => (
+                        <DashboardCard 
+                        key={item.label}
+                        label={item.label}
+                        value={item.value}
+                        onClick={item.action}
+                        />
                     ))}
                 </div>
 
 
                 <div className="mt-6 flex flex-col lg:flex-row gap-6">
 
-                    <Card className="border-t-4 border-t-blue-600 rounded-lg overflow-hidden ring-0 shadow-sm  w-full lg:w-[410px]">
-                        <CardContent className="">
+                    {/* Upcoming remainder table */}
+                    <RemainderTable 
+                    filteredRemainders = {filteredRemainders}
+                    upcomingFilter = {upcomingFilter}
+                    setUpcomingFilter = {setUpcomingFilter}
+                    />
 
-                            <div className="p-1 border-b ">
-                                <h3 className="text-xl font-semibold text-center ">
-                                    Upcoming Reminders
-                                </h3>
-
-                                <select
-                                    value={upcomingFilter}
-                                    onChange={(e) => setUpcomingFilter(Number(e.target.value))}
-                                    className="h-9 rounded-lg border border-blue-200 bg-white px-3 text-sm outline-none"
-                                >
-                                    <option value={7}>In 7 days</option>
-                                    <option value={3}>In 3 days</option>
-                                    <option value={1}>In 1 day</option>
-                                </select>
-                            </div>
-
-                            <Table className="">
-                                <TableHeader>
-                                    <TableRow className="bg-blue-100 border-blue-200">
-                                        <TableHead className='flex  justify-between items-center'> Client Name </TableHead>
-                                        <TableHead className="">Next Payment Date</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                            </Table>
-
-                            <ScrollArea className="h-[260px]">
-                                <Table>
-                                    <TableBody >
-                                        {filteredRemainders.map((item) => (
-                                            <TableRow key={item._id} className="border-y-blue-200 cursor-pointer hover:bg-blue-200" onClick={() => navigate(`/clients/policy/more-info/${item.clientId}/${item.policyId}`)}>
-                                                <TableCell className="text-left">{item.clientName}</TableCell>
-                                                <TableCell className=""> {new Date(item.nextPaymentDate).toLocaleDateString()} </TableCell>
-                                                <TableCell className="text-right"> ₹ {item.Amount.toLocaleString("en-IN")}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-
-
-
-                                <ScrollBar orientation="vertical" />
-                            </ScrollArea>
-
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-t-4 border-t-blue-600 rounded-lg overflow-hidden ring-0 shadow-sm w-full lg:w-[540px]">
-                        <CardContent className="">
-
-                            <div className="p-1 border-b ">
-                                <h3 className="text-xl font-semibold text-center ">
-                                    Recent Alerts
-                                </h3>
-                            </div>
-
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-blue-100 border-blue-200">
-                                        <TableHead className='text-left'>Client Name</TableHead>
-                                        <TableHead className="text-left">Due Date</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                        <TableHead className="text-right">Last Alerted On</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                            </Table>
-
-                            <ScrollArea className="h-[260px]">
-                                <Table>
-                                    <TableBody>
-                                        {alert.map((item) => (
-                                            <TableRow key={item._id}>
-
-                                                <TableCell className='text-left'>{item.clientName}</TableCell>
-
-                                                <TableCell className='text-right'>
-                                                    {new Date(item.dueDate).toLocaleDateString()}
-                                                </TableCell>
-
-                                                <TableCell className='text-right'>
-                                                    ₹ {item.amount.toLocaleString("en-IN")}
-                                                </TableCell>
-
-                                                <TableCell className='text-right'>
-                                                    {new Date(item.alertedOn).toDateString()}
-                                                </TableCell>
-
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-
-                                <ScrollBar orientation="vertical" />
-                            </ScrollArea>
-
-                        </CardContent>
-                    </Card>
+                    
+                    {/* recent alert table card */}
+                    <AlertTable 
+                    alert = {alert}
+                    />
 
                 </div>
 

@@ -42,6 +42,7 @@ const Policy = () => {
         console.log("this clients policies details are: ", response.data)
     }
 
+    // updating client
     const updateClient = async (e) => {
         e.preventDefault()
 

@@ -111,7 +111,7 @@ export const getDashboardCardPolicies = async (req, res) => {
         const endDate = new Date()
         endDate.setHours(23, 59, 59, 999)
 
-        const todayPoliciesData = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: startDate, $lte: endDate } })
+        const todayPoliciesData = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: startDate, $lte: endDate } }).populate("clientId", "name")
 
         return res.status(202).json({
             success: true,
@@ -122,7 +122,7 @@ export const getDashboardCardPolicies = async (req, res) => {
 
     if (search === "due-this-week") {
 
-        const thisWeekPoliciesData = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } })
+        const thisWeekPoliciesData = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } }).populate("clientId", "name")
 
         return res.status(202).json({
             success: true,
@@ -132,7 +132,7 @@ export const getDashboardCardPolicies = async (req, res) => {
 
     if (search === "total-policies") {
 
-        const detailsOfAllPolicies = await Policy.find({ agentId: req.agent.agentId })
+        const detailsOfAllPolicies = await Policy.find({ agentId: req.agent.agentId }).populate("clientId", "name")
 
         console.log("details of all policies is: ", detailsOfAllPolicies)
 
