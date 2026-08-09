@@ -6,10 +6,28 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useNavigate } from 'react-router-dom';
 
 
-const RemainderTable = ({ upcomingFilter, filteredRemainders, setUpcomingFilter }) => { 
+const RemainderTable = ({ upcomingFilter, thisWeekRemainder, setUpcomingFilter }) => {
 
     const navigate = useNavigate()
-    
+
+
+    // for upcoming remainder date filter
+    const filteredRemainders = thisWeekRemainder.filter((item) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dueDate = new Date(item.nextPaymentDate);
+        dueDate.setHours(0, 0, 0, 0);
+
+        const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        console.log("diff is: ", diffDays)
+
+        // it will return either "true" or "false" 
+        // if policy satisfy condition means "true" then it will get store inside "filterRemainder" else not  
+        return diffDays >= 0 && diffDays <= upcomingFilter;
+    });
+    console.log("filtered data is: ", filteredRemainders)
+
     return (
 
         //UPCOMING REMAINDER TABLE CARD

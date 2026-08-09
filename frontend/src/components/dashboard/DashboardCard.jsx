@@ -7,27 +7,34 @@ import { CalendarCheck2Icon, CalendarClock, CalendarDays, CalendarHeart, Calenda
 const DashboardCard = ({ label, value, onClick }) => {
 
     return (
-        <Card
-            key={label}
-            className="border-t-4 border-t-blue-600 shadow-sm rounded-lg ring-0 w-full"
-        >
-            <CardContent className="pt-5">
 
-                <p className="text-xs text-slate-500 mb-1"> 
-                    {label === "Total Clients" ? <User className='flex justify-center items-center ml-22 mb-2'/> : label === "Total Policies" ? <FileText className='flex justify-center items-center ml-22 mb-2'/> : label === "Due Today" ? <CalendarClock className='flex justify-center items-center ml-22 mb-2'/> : <CalendarDays  className='flex justify-center items-center ml-22 mb-2'/> }
-                    {label} </p>
-                <p className="text-2xl font-semibold text-slate-900"> {value ?? "0"} </p>
-
-            </CardContent>
-
-            <Button
-                onClick={onClick}
-                className="text-xs text-blue-500 font-semibold flex  justify-center mb-0 p-0 ring-0"
+        <div className="flex h-32">
+            <Card
+                key={label}
+                className="border-t-4 border-t-blue-600 shadow-sm rounded-lg ring-0 w-full flex flex-col justify-between items-center p-2"
             >
-                View
-            </Button>
 
-        </Card>
+                <CardContent className="flex flex-col items-center text-center mt-1">
+                    {/* Icon */}
+                    {label === "Total Clients" ? ( <User className="h-6 w-6 text-blue-600 mb-1" /> ) : label === "Total Policies" ? ( <FileText className="h-6 w-6 text-blue-600 mb-1" /> ) : label === "Due Today" ? ( <CalendarClock className="h-6 w-6 text-blue-600 mb-1" /> ) : ( <CalendarDays className="h-6 w-6 text-blue-600 mb-1" /> )}
+
+                    <p className="text-xs text-slate-500">{label}</p>
+
+                    <span className="text-lg font-semibold text-slate-900">
+                        {value ?? "0"}
+                    </span>
+                <Button
+                    onClick={onClick}
+                    className="text-xs text-blue-500 font-semibold flex justify-center p-0 ring-0 mt-3"
+                >
+                    View
+                </Button>
+                </CardContent>
+
+            </Card>
+        </div>
+
+
     )
 }
 

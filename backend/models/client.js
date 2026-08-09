@@ -27,6 +27,11 @@ const clientSchema = new mongoose.Schema({
         match: [/^\+?[1-9]\d{9,14}$/, 'Enter a valid number with country code'],
     },
 
+    pinned: {
+        type: Boolean,
+        default: false
+    },
+
     alternateNumber: {
         type: String,
         trim: true,

@@ -1,6 +1,6 @@
 import express from 'express'
 import { checkClientOwnership, checkToken } from '../middleware/agent.auth.js'
-import { addClient, getClientById, getClients, searchClient, updateClient } from '../controller/client.controller.js'
+import { addClient, getClientById, getClients, pinnedClient, searchClient, updateClient } from '../controller/client.controller.js'
 
 const client_router = express.Router()
 
@@ -13,5 +13,7 @@ client_router.put('/:clientId/edit-client', checkToken,checkClientOwnership, upd
 client_router.get('/search', checkToken, searchClient)
 
 client_router.get('/:clientId', checkToken, getClientById)
+
+client_router.put('/:clientId/pin', checkToken, pinnedClient)
 
 export default client_router

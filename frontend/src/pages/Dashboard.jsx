@@ -1,12 +1,13 @@
 import api from '../api/axios.js'
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Button } from "@/components/ui/button"
 
 import DashboardCard from '@/components/dashboard/DashboardCard.jsx'
 import RemainderTable from '@/components/dashboard/RemainderTable.jsx'
 import AlertTable from '@/components/dashboard/AlertTable.jsx'
+import Sidebar from '@/components/sidebar/Sidebar.jsx'
 
 
 const Dashboard = () => {
@@ -18,6 +19,10 @@ const Dashboard = () => {
     const [alert, setAlert] = useState([])
 
     const [upcomingFilter, setUpcomingFilter] = useState(7);
+
+    // state for the sidebar
+    const [open, setOpen] = useState(true)
+
 
     const navigate = useNavigate()
 
@@ -95,71 +100,43 @@ const Dashboard = () => {
         }
     ]
 
-    // for upcoming remainder date filter
-    const filteredRemainders = thisWeekRemainder.filter((item) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const dueDate = new Date(item.nextPaymentDate);
-        dueDate.setHours(0, 0, 0, 0);
-
-        const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-        console.log("diff is: ", diffDays)
-
-        // it will return either "true" or "false" 
-        // if policy satisfy condition means "true" then it will get store inside "filterRemainder" else not  
-        return diffDays >= 0 && diffDays <= upcomingFilter;
-    });
-    console.log("filtered data is: ", filteredRemainders)
 
     return (
-        <div className="min-h-screen bg-slate-100 px-6 py-8 w-full">
-            <div className="max-w-7xl  mx-auto w-full">
+        <div className="flex">
 
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-slate-900">
-                        Dashboard
-                    </h3>
-                    <Button
-                        onClick={() => navigate("/clients")}
-                        className="h-9 bg-blue-600 hover:bg-blue-700 text-sm text-white"
-                    >
-                        View Clients
-                    </Button>
-                </div>
+            {/* Sidebar */}
+            <Sidebar />
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {stats.map(( item ) => (
-                        <DashboardCard 
-                        key={item.label}
-                        label={item.label}
-                        value={item.value}
-                        onClick={item.action}
+            {/* Dashboard */}
+            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-8">
+                <div className="max-w-6xl mx-auto">
+                    <div className="flex items-center justify-center mb-6">
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {stats.map((item) => (
+                            <DashboardCard
+                                key={item.label}
+                                label={item.label}
+                                value={item.value}
+                                onClick={item.action}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="mt-6 flex flex-col lg:flex-row gap-6">
+                        <RemainderTable
+                            thisWeekRemainder={thisWeekRemainder}
+                            upcomingFilter={upcomingFilter}
+                            setUpcomingFilter={setUpcomingFilter}
                         />
-                    ))}
+                        <AlertTable alert={alert} />
+                    </div>
                 </div>
+            </div>
+        </div>
+    );
 
-
-                <div className="mt-6 flex flex-col lg:flex-row gap-6">
-
-                    {/* Upcoming remainder table */}
-                    <RemainderTable 
-                    filteredRemainders = {filteredRemainders}
-                    upcomingFilter = {upcomingFilter}
-                    setUpcomingFilter = {setUpcomingFilter}
-                    />
-
-                    
-                    {/* recent alert table card */}
-                    <AlertTable 
-                    alert = {alert}
-                    />
-
-                </div>
-
-            </div >
-        </div >
-    )
 }
 
 export default Dashboard

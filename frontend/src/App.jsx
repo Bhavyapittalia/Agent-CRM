@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Dashboard from './pages/Dashboard'
 import Clients from './pages/Clients'
 import AddClients from './pages/AddClients'
-import Policy from './pages/Policy'
+import Policy from './pages/ClientPolicy'
 import AddPolicy from './pages/AddPolicy'
 import MorePolicyDetail from './pages/MorePolicyDetail'
 
@@ -24,14 +24,20 @@ function App() {
           <Route path="/login" element={
             <Login />
           } />
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
 
-          <Route path="/dashboard" element={
-            <Dashboard />
-          } />
-          
-          <Route path="/clients" element={
-            <Clients />
-          } />
+          <Route
+            path="/clients"
+            element={<Clients />}
+          />
+
+          <Route
+            path="/clients/policies"
+            element={<PolicyList />}
+          />
 
           <Route path="/clients/add-clients" element={
             <AddClients />
@@ -52,10 +58,18 @@ function App() {
           <Route path="/clients/policy/more-info/:id" element={
             <MorePolicyDetail />
           } />
+          {/* 
+          <Route path="/dashboard" element={
+            <Dashboard />
+          } /> */}
 
-          <Route path="/clients/policies" element={
+          {/* <Route path="/clients" element={
+            <Clients />
+          } /> */}
+
+          {/* <Route path="/clients/policies" element={
             <PolicyList />
-          } />
+          } /> */}
 
         </Routes>
 
