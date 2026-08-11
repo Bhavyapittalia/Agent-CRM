@@ -8,6 +8,7 @@ import DashboardCard from '@/components/dashboard/DashboardCard.jsx'
 import RemainderTable from '@/components/dashboard/RemainderTable.jsx'
 import AlertTable from '@/components/dashboard/AlertTable.jsx'
 import Sidebar from '@/components/sidebar/Sidebar.jsx'
+import PremiumChart from '@/components/dashboard/PremiumChart.jsx'
 
 
 const Dashboard = () => {
@@ -19,6 +20,8 @@ const Dashboard = () => {
     const [alert, setAlert] = useState([])
 
     const [upcomingFilter, setUpcomingFilter] = useState(7);
+
+    const [premiumData, setPremiumData] = useState([])
 
     // state for the sidebar
     const [open, setOpen] = useState(true)
@@ -33,8 +36,15 @@ const Dashboard = () => {
 
             const upcomingRemainder = await api.get("/dashboard/upcoming-remainder")
 
+            const premiumData = await api.get("/dashboard/analytics")
+
+            // monthly expected premium data
+            setPremiumData(premiumData.data.formattedData)
+
+            // this week remainder data
             setThisWeekRemainder(upcomingRemainder.data.policyInfo)
 
+            // cards summery data
             setSummery(response.data)
 
             // as policies data is inside res.data.lastCron.policiesData
@@ -100,16 +110,24 @@ const Dashboard = () => {
         }
     ]
 
+    // let amount = 0
+    // premiumData.forEach(item => {
+    //     return amount = amount + item.totalPremium
+    // })
+
+    // console.log("totalPremium is: ", amount)
+
 
     return (
-        <div className="flex">
+        <div className="flex min-h-screen max-w-[1400px] mx-auto">
 
             {/* Sidebar */}
             <Sidebar />
 
+
             {/* Dashboard */}
-            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-8">
-                <div className="max-w-6xl mx-auto">
+            <div className="flex-1  ml-25 bg-gray-50 px-6 py-8">
+                <div className="w-full">
                     <div className="flex items-center justify-center mb-6">
                     </div>
 
@@ -131,6 +149,10 @@ const Dashboard = () => {
                             setUpcomingFilter={setUpcomingFilter}
                         />
                         <AlertTable alert={alert} />
+                    </div>
+
+                    <div className='mt-6'>
+                        <PremiumChart data={premiumData}/>
                     </div>
                 </div>
             </div>

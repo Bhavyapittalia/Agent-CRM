@@ -65,7 +65,10 @@ export const loginAgent = async (req, res) => {
                 // here we are putting the agentId in the token PAYLOAD 
                 agentId: agent._id
             },
-            process.env.JWT_SECRET
+            process.env.JWT_SECRET,
+            {
+                expiresIn: 60 * 60 * 1000,
+            }
         )
 
         return res.status(200).json({

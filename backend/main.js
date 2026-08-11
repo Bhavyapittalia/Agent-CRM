@@ -8,6 +8,7 @@ import policy_router from './routes/policy.route.js'
 import dashboard_router from './routes/dashboard.route.js'
 import "./alert_schedule/payment.alert.js"
 import cors from 'cors'
+import analytics_router from './routes/dashboard.analytics.route.js'
 
 const app = express()
 const port = 3000
@@ -24,6 +25,7 @@ app.use('/agent', agent_router)
 app.use('/client', client_router)
 app.use('/policy', policy_router)
 app.use('/dashboard', dashboard_router)
+app.use('/dashboard/analytics', analytics_router)
 
 // connectiong database
 connectDB()

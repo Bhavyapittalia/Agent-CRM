@@ -84,7 +84,7 @@ const Clients = () => {
     return (
         <div className='flex'>
             <Sidebar />
-            <div className="flex-1 min-h-screen bg-gray-50 px-3 py-8">
+            <div className="flex-1 min-h-screen ml-43 bg-gray-50 px-3 py-8">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                         <h3 className="text-xl font-semibold text-slate-900">

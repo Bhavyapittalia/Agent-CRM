@@ -15,11 +15,11 @@ export const useDebounce = (value, delay) => {
             setDebouncedValue(value)
         }, delay);
 
-    // If the value changes again before the delay ends, 
-    // this clears the old timer and starts a brand new one.
-    return () => {
-        clearTimeout(handler)
-    }
+        // If the value changes again before the delay ends, 
+        // this clears the old timer and starts a brand new one.
+        return () => {
+            clearTimeout(handler)
+        }
 
     }, [value, delay])
 

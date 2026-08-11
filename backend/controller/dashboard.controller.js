@@ -57,6 +57,7 @@ export const dashboardSummery = async (req, res) => {
             // now in policiesDetail we are storing only this req.agent.agentId policies and cron data and others agent's policy and cron data is removed   
             policiesDetail: filteredPolicies
         }
+        
     })
 
     console.log("last cron created at: ", lastOneDayCron)
