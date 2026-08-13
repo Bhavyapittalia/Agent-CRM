@@ -119,16 +119,16 @@ const Dashboard = () => {
 
 
     return (
-        <div className="flex min-h-screen max-w-[1400px] mx-auto">
+        <div className="flex min-h-screen max-w-[1400px]">
 
             {/* Sidebar */}
             <Sidebar />
 
 
             {/* Dashboard */}
-            <div className="flex-1  ml-25 bg-gray-50 px-6 py-8">
-                <div className="w-full">
-                    <div className="flex items-center justify-center mb-6">
+            <div className="flex-1 ml-45  bg-gray-50 px-6 py-8">
+                <div className="">
+                    <div className ="flex items-center justify-center mb-6">
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

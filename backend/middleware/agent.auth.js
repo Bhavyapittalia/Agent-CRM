@@ -21,6 +21,7 @@ export const checkToken = (req, res, next) => {
         // we are getting an "agentId" form the token where we have sign the token and send agentId with it
         // we actually store the "agentId" in the PAYLOAD of the token
         console.log("Agent ID is: ", decoded.agentId)
+        console.log("decoded stored this: ", decoded)
 
         // so now actually we are storing the "agentId" in the "req.agent"
         // NOW WE ARE ABLE to use "req.agent.agentId" 

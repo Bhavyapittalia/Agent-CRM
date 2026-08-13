@@ -32,7 +32,7 @@ const Sidebar = () => {
     ]
 
     return (
-        <div className={`${open ? "w-45" : "w-20"} bg-slate-100 max-h-[105%] fixed left-0 top-0 p-5 pt-4 z-50 duration-300 border border-blue-100`}>
+        <div className={`${open ? "w-45" : "w-20"} bg-slate-100 max-h-[105%] fixed  top-0 p-5 pt-4 z-50 duration-300 border border-blue-100`}>
             <ul className="pt-6">
                 <h2 className=''>
                     <div className='text-black font-bold'>
@@ -44,8 +44,8 @@ const Sidebar = () => {
                 <div className='flex flex-col justify-center items-center mt-10'>
                     {menus.map((Menu, index) => {
                         const isActive = (location.pathname + location.search) === Menu.src;
-                        console.log("location path is: ", location.pathname)
-                        console.log("Menu path is: ", Menu.src)
+                        // console.log("location path is: ", location.pathname)
+                        // console.log("Menu path is: ", Menu.src)
 
                         return (
                             <li

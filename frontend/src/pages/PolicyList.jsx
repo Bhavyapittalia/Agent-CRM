@@ -50,6 +50,11 @@ const PolicyList = () => {
     }, [debouncedSearch]) // this means this effect will only run if any search changed after some MS passed
 
     const handleSearch = async (debouncedSearch) => {
+
+        if (!debouncedSearch) {
+            return getPolicies()
+        }
+
         const response = await api.get(`/policy/filter/client?name=${debouncedSearch}&type=${search}`)
         console.log("clients are: ", response.data.filteredClient)
         setFileteredClient(response.data.filteredClient)
@@ -57,9 +62,9 @@ const PolicyList = () => {
 
     console.log("search FILTERED data is: ", filteredClient)
 
-    useEffect(() => {
-        getPolicies()
-    }, [search])
+    // useEffect(() => {
+    //     getPolicies()
+    // }, [search])
 
     return (
 

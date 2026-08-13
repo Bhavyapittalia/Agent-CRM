@@ -4,17 +4,23 @@ import { PhoneIncoming, Pin, PinIcon, PinOffIcon } from 'lucide-react'
 import api from '@/api/axios'
 import { useNavigate } from 'react-router-dom'
 
-const ClientCards = ({ client, handlePinClient }) => {
+const ClientCards = ({ client, handlePinClient, clientUpcomingPolicy }) => {
 
     const navigate = useNavigate()
 
     return (
         <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
-            {client.map((Client) => (
+            {client.map((Client) => {
 
+                const upcomingPolicies = clientUpcomingPolicy?.[Client._id]
+
+                return (
+                    
                 <Card
                     key={Client._id}
-                    className="ring-0  border-t-3 border-t-blue-600  w-[100%] h-32 mt-2 shadow ml-2 overflow-hidden p-0 "
+                    className="ring-0  border-t-3 border-t-blue-600  w-[100%] h-28 mt-2 shadow ml-2 overflow-hidden p-0 "
+                    onClick={() => navigate(`/clients/policy/${Client._id}`)}
+
                 >
 
                     <CardContent className="p-0 flex flex-col h-full relative">
@@ -50,37 +56,40 @@ const ClientCards = ({ client, handlePinClient }) => {
                                     </p>
                                 </div>
 
+                                <div className="mt-1">
+                                    <p className="text-[10px] font-medium text-slate-400">
+                                        Upcoming Premium
+                                    </p>
 
-                                <div className='flex-1'>
-                                    <button className='text-xs text-blue-300 hover:cursor-pointer mt-5 ml-24 hover:text-blue-600 ' onClick={() => navigate(`/clients/policy/${Client._id}`)}>
-                                        View Client →
-                                    </button>
+                                    <div className="flex items-center gap-2 mt-0.5 justify-evenly">
+                                        <p className="text-[11px] font-semibold text-slate-600">
+                                            {new Date(upcomingPolicies?.nextPaymentDate).toLocaleDateString("en-US", {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric"
+                                            })}
+                                        </p>
+
+                                        <p className="text-[11px] text-slate-400 truncate">
+                                            {upcomingPolicies?.policyName}
+                                        </p>
+                                    </div>
+
+                                    <p className="text-[11px] font-semibold text-blue-600">
+                                        ₹{upcomingPolicies?.policyAmount}
+                                    </p>
                                 </div>
 
                             </div>
 
                         </div>
 
-
-                        {/* bottom options */}
-                        <div className='h-8 border-t flex text-xs'>
-
-                            <button className='w-[34%] text-red-500 font-semibold rounded-r-md hover:bg-red-50 border-r'>
-                                {/* <Trash2  /> */}
-                                Delete
-                            </button>
-
-                            <button onClick={() => navigate(`/clients/add-clients`)} className=' w-[60%] text-blue-600 hover:bg-blue-50 font-semibold' >
-                                Add Policy
-                            </button>
-                        </div>
-
-
-
                     </CardContent>
 
                 </Card>
-            ))}
+
+                )
+            })}
         </div>
     )
 }

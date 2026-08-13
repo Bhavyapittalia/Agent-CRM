@@ -8,7 +8,7 @@ const PremiumChart = ({ data }) => {
 
     let amount = 0
     data.forEach(item => {
-        return amount = amount + item.totalPremium
+        return amount += item.totalPremium
     })
 
     console.log("total premium is: ", amount)

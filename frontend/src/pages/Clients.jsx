@@ -18,21 +18,36 @@ const Clients = () => {
     // as data from the frontend is coming in the form of "Array" that wise we have to store in the []
     const [client, setClient] = useState([])
 
-    // const [filteredClients, setFilteredClients] = useState([])
+    const [clientUpcomingPolicy, setClientUpcomingPolicy] = useState("")
 
     const navigate = useNavigate()
 
     const getClients = async () => {
         try {
             const response = await api.get("/client")
-            // as data is inside the clients 
-            setClient(response.data.clients)
-            // setFilteredClients(response.data.clients)
 
-            const data = response.data.clients
-            console.log("your clients are: ", response.data.clients)
-            console.log("Is data is in a Array format?.. ", Array.isArray(data))
-            console.log("client: ", client)
+            // storing data into variable then set it to the state to use it int this function 
+            const clients = response.data.clients
+            setClient(clients)
+            // console.log("Clients are: ", clients)
+
+            const allPolicies = clients.map(async (client) => {
+                const response = await api.get(`/policy/${client._id}`)
+
+                return {clientId: client._id, policy: response.data.policy[0]}
+            })
+
+            const policyResult = await Promise.all(allPolicies)
+            console.log("policyResult is: ", policyResult)
+
+            const policyMap = {}
+
+            policyResult.forEach((item) => {
+                policyMap[item.clientId] = item.policy
+            })
+
+            setClientUpcomingPolicy(policyMap)
+            console.log("policy map is: ", policyMap)
         }
         catch (error) {
             console.log("error is: ", error.response)
@@ -40,6 +55,7 @@ const Clients = () => {
             console.log("error is: ", error.message)
         }
     }
+    console.log("total Clients are: ", clientUpcomingPolicy)
 
     const [searchItem, setSearchItem] = useState("")
 
@@ -50,14 +66,20 @@ const Clients = () => {
         handleSearch(debouncedSearchTerm)
     }, [debouncedSearchTerm])
 
+
+    // useEffect(() => {
+    //     getClients()
+    // }, [])
+
     const handleSearch = async (searchValue) => {
 
+        if (!searchValue) {
+            return getClients()
+        }
         const response = await api.get(`/client/search?name=${searchValue}`)
-        console.log("filtered client data is: ", response.data.client)
         setClient(response.data.client)
 
     }
-
 
     const handlePinClient = async (clientId) => {
 
@@ -74,12 +96,6 @@ const Clients = () => {
             console.log("error occured in pining: ", error.response)
         }
     }
-
-
-    useEffect(() => {
-        getClients()
-    }, [])
-
 
     return (
         <div className='flex'>
@@ -120,7 +136,7 @@ const Clients = () => {
                         ) : (
 
                             // implementing the each client card
-                            <ClientCards client={client} handlePinClient={handlePinClient}/>
+                            <ClientCards client={client} handlePinClient={handlePinClient} clientUpcomingPolicy={clientUpcomingPolicy} />
 
                         )}
 

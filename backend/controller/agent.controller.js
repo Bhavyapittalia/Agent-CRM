@@ -59,29 +59,85 @@ export const loginAgent = async (req, res) => {
         }
 
         console.log("this agent id in the token is going: ", agent._id)
-        const token = jwt.sign(
+
+        const accessToken = jwt.sign(
             {
                 // will be useful when we need to assign client with agentId wise
-                // here we are putting the agentId in the token PAYLOAD 
+                // here we are putting the agentId in the token PAYLOAD
                 agentId: agent._id
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: 60 * 60 * 1000,
+                expiresIn: "1m"
+            }
+        )
+
+        const refreshToken = jwt.sign(
+            {
+                agentId: agent._id
+            },
+            process.env.JWT_REFRESH_SECRET,
+            {
+                expiresIn: "30d"
             }
         )
 
         return res.status(200).json({
             succuess: true,
-            token,
+            accessToken,
+            refreshToken
             // we can access now agentId with "req.agent.agentId"
             // but not actually this is doing everything go to the middlware decoded variable 
-            // agent
         })
 
     }
     catch (error) {
         return res.status(500).send({
+            success: false,
+            error: error.message,
+            stack: error.stack
+        })
+    }
+}
+
+
+export const refreshAccessToken = async (req, res) => {
+    try {
+
+        console.log("refresh API...")
+        console.log("refresh", req.body)
+        const { refreshToken } = req.body
+        console.log("refresh token is: ", refreshToken)
+
+        if (!refreshToken) {
+            return res.status(404).json({
+                success: true,
+                error: "Token not present"
+            })
+        }
+
+        console.log("decoding...")
+        console.log("key is: ", process.env.JWT_REFRESH_SECRET)
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
+        console.log("decoded in refresh token contains: ", decoded)
+    
+        const accessToken = jwt.sign(
+            {
+                agentId: decoded.agentId
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1m"
+            }
+        )
+    
+        return res.status(202).json({
+            success: true,
+            accessToken
+        })
+    }
+    catch (error) {
+        return res.status(504).json({
             success: false,
             error: error.message,
             stack: error.stack

@@ -14,7 +14,6 @@ export const addPolicy = async (req, res) => {
 
     const policy = await Policy.create({ ...req.body, clientId: req.params.clientId, agentId: req.agent.agentId })
 
-
     console.log("policy client and his id is: ", policy)
 
     return res.status(202).json({
@@ -34,7 +33,7 @@ export const getPolicy = async (req, res) => {
     // console.log("getPolicy API is running....")
     console.log("client id is: ", req.params.clientId)
     // console.log("agent id is: ", req.agent.agentId)
-    const policy = await Policy.find({ clientId: req.params.clientId })
+    const policy = await Policy.find({ clientId: req.params.clientId }).sort({nextPaymentDate: -1})
 
     console.log("policies are: ", policy)
     // console.log("I AM IN get policy AND REQ.. IS: ", req.params.clientId)
@@ -46,11 +45,11 @@ export const getPolicy = async (req, res) => {
         })
     }
 
-    return res.json({
+    return res.status(202).json({
         success: true,
         policy
-
     })
+
     return res.status(500).json({
         success: false,
         message: error.message,
