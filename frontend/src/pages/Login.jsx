@@ -38,7 +38,6 @@ const Login = () => {
 
         try {
             const response = await api.post("/agent/login", {
-                name: user.username,
                 email: user.email,
                 password: user.password
             })

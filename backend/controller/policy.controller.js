@@ -33,7 +33,7 @@ export const getPolicy = async (req, res) => {
     // console.log("getPolicy API is running....")
     console.log("client id is: ", req.params.clientId)
     // console.log("agent id is: ", req.agent.agentId)
-    const policy = await Policy.find({ clientId: req.params.clientId }).sort({nextPaymentDate: -1})
+    const policy = await Policy.find({ agentId: req.agent.agentId, clientId: req.params.clientId }).sort({nextPaymentDate: -1})
 
     console.log("policies are: ", policy)
     // console.log("I AM IN get policy AND REQ.. IS: ", req.params.clientId)

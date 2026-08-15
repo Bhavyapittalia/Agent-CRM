@@ -51,10 +51,13 @@ export const loginAgent = async (req, res) => {
             email: parsedBody.email
         })
 
+        // console.log("email and password are: ", parsedBody.email, parsedBody.password)
+        // const agent = await Agent.findOne({email: parsedBody.email, password: parsedBody.password})
+
         if (!agent) {
             return res.status(404).send({
                 success: false,
-                error: "email is invalid!"
+                error: "email or password is invalid!"
             })
         }
 
@@ -68,7 +71,7 @@ export const loginAgent = async (req, res) => {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: "1m"
+                expiresIn: "10m"
             }
         )
 
@@ -127,7 +130,7 @@ export const refreshAccessToken = async (req, res) => {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: "1m"
+                expiresIn: "10m"
             }
         )
     

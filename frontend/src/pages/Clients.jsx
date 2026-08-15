@@ -31,23 +31,8 @@ const Clients = () => {
             setClient(clients)
             // console.log("Clients are: ", clients)
 
-            const allPolicies = clients.map(async (client) => {
-                const response = await api.get(`/policy/${client._id}`)
-
-                return {clientId: client._id, policy: response.data.policy[0]}
-            })
-
-            const policyResult = await Promise.all(allPolicies)
-            console.log("policyResult is: ", policyResult)
-
-            const policyMap = {}
-
-            policyResult.forEach((item) => {
-                policyMap[item.clientId] = item.policy
-            })
-
-            setClientUpcomingPolicy(policyMap)
-            console.log("policy map is: ", policyMap)
+            const upcomingResponse = await api.get("/client/upcoming-premium")
+            setClientUpcomingPolicy(upcomingResponse.data.upcomingPremiums)
         }
         catch (error) {
             console.log("error is: ", error.response)
@@ -55,7 +40,7 @@ const Clients = () => {
             console.log("error is: ", error.message)
         }
     }
-    console.log("total Clients are: ", clientUpcomingPolicy)
+    console.log("this client upcoming policy is: ", clientUpcomingPolicy)
 
     const [searchItem, setSearchItem] = useState("")
 

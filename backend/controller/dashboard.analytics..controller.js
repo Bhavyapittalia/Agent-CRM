@@ -27,6 +27,7 @@ export const dashboardAnalytcis = async (req, res) => {
                             $year: "$nextPaymentDate"
                         }
                     },
+                
 
                     totalPremium: {
                         $sum: "$policyAmount"
@@ -92,7 +93,8 @@ export const dashboardAnalytcis = async (req, res) => {
 
         return res.status(202).json({
             success: true,
-            formattedData
+            formattedData,
+            chartData
         })
 
     }
