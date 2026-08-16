@@ -12,7 +12,7 @@ export const registerAgent = async (req, res) => {
         console.log("request body is: ", req.body)
         const parsedBody = AgentRegisterSchema.parse(req.body)
         console.log("parsed body is runned: ", parsedBody)
-        
+
         const agent = await Agent.create(parsedBody)
         console.log("agent is created runned")
 
@@ -51,17 +51,19 @@ export const loginAgent = async (req, res) => {
             email: parsedBody.email
         })
 
-        // console.log("email and password are: ", parsedBody.email, parsedBody.password)
-        // const agent = await Agent.findOne({email: parsedBody.email, password: parsedBody.password})
-
         if (!agent) {
-            return res.status(404).send({
+            return res.status(401).send({
                 success: false,
-                error: "email or password is invalid!"
+                error: "email is invalid!"
             })
         }
 
-        console.log("this agent id in the token is going: ", agent._id)
+        if (agent.password != req.body.password) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid password"
+            })
+        }
 
         const accessToken = jwt.sign(
             {
@@ -71,7 +73,7 @@ export const loginAgent = async (req, res) => {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: "10m"
+                expiresIn: "1m"
             }
         )
 
@@ -81,7 +83,7 @@ export const loginAgent = async (req, res) => {
             },
             process.env.JWT_REFRESH_SECRET,
             {
-                expiresIn: "30d"
+                expiresIn: "1m"
             }
         )
 
@@ -93,8 +95,11 @@ export const loginAgent = async (req, res) => {
             // but not actually this is doing everything go to the middlware decoded variable 
         })
 
+        console.log("this agent id in the token is going: ", agent._id)
+
+
     }
-    catch (error) {
+    catch (error) { 
         return res.status(500).send({
             success: false,
             error: error.message,
@@ -113,27 +118,32 @@ export const refreshAccessToken = async (req, res) => {
         console.log("refresh token is: ", refreshToken)
 
         if (!refreshToken) {
-            return res.status(404).json({
+            return res.status(401).json({
                 success: true,
-                error: "Token not present"
+                error: "Token Invalid"
             })
         }
+        
+        // if (jwt.TokenExpiredError) {
+            
+        // }
 
         console.log("decoding...")
         console.log("key is: ", process.env.JWT_REFRESH_SECRET)
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
+        console.log("REFRESH IS STILL VALID!!!")
         console.log("decoded in refresh token contains: ", decoded)
-    
+
         const accessToken = jwt.sign(
             {
                 agentId: decoded.agentId
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: "10m"
+                expiresIn: "1m"
             }
         )
-    
+
         return res.status(202).json({
             success: true,
             accessToken

@@ -1,10 +1,14 @@
+import { Button } from '@base-ui/react'
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
 const Sidebar = () => {
 
     const navigate = useNavigate()
     const location = useLocation()
+
+    const {logout} = useAuth()
 
     // creating object menu for the sidebar
     const menus = [
@@ -24,11 +28,12 @@ const Sidebar = () => {
             src: "/clients/policies?search=total-policies",
         },
 
-        {
-            title: "Logout",
-            src: "/",
-            gap: true
-        }   
+        // {
+        //     title: "Logout",
+        //     onclick: logout,
+        //     src: "/login",
+        //     gap: true
+        // }   
     ]
 
     return (
@@ -62,6 +67,14 @@ const Sidebar = () => {
                             </li>
                         )
                     })}
+
+                    <button onClick={() => {
+                        const logoutFunc = logout()
+                        const route = navigate("/login")
+                        return logoutFunc && route 
+                        } } className='mt-70  text-red-400 font-semibold hover:bg-red-200 hover:text-red-700 p-2 rounded-md cursor-pointer '>
+                        Logout 
+                    </button> 
                 </div>
             </ul>
         </div >

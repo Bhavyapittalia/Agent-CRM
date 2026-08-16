@@ -41,20 +41,26 @@ api.interceptors.response.use(
         // console.log("Error Occuriingg...", error.response)
         const refreshToken = localStorage.getItem("refreshToken")
 
-        if (error.response.status == 404) {
-            // console.log("API request is sent")
-            const response = await api.post("/agent/refresh", { refreshToken: refreshToken })
-            // console.log("API request is over and the ACCESS token is generated")
-            const newAccessToken = response.data.accessToken
-            localStorage.setItem("accessToken", newAccessToken)
+        if (error.response.status == 401) {
 
-            // now passing the new token into the request after the old access token is expired
-            // console.log("error.config is: ", error.config)
-            const passingNewToken = error.config
-            passingNewToken.headers.Authorization = newAccessToken
-            // console.log("new toke is: ", passingNewToken)
-
-            return api(passingNewToken)
+            try {
+                const response = await api.post("/agent/refresh", { refreshToken: refreshToken })
+                // console.log("API request is over and the ACCESS token is generated")
+                console.log("response of refresh API is: ", response)
+                const newAccessToken = response.data.accessToken
+                localStorage.setItem("accessToken", newAccessToken)
+    
+                // now passing the new token into the request after the old access token is expired
+                const passingNewToken = error.config
+                passingNewToken.headers.Authorization = newAccessToken
+                // console.log("new toke is: ", passingNewToken)
+    
+                return api(passingNewToken)
+            }
+            catch (error) {
+                localStorage.clear()
+                window.location.href="/login"
+            }
         }
         return Promise.reject(error)
     }

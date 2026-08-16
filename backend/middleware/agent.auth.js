@@ -32,7 +32,7 @@ export const checkToken = (req, res, next) => {
 
     }
     catch (error) {
-        return res.status(404).json({
+        return res.status(401).json({
             success: false,
             error: "Invalid Token"
         })

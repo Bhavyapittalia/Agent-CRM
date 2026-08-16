@@ -1,7 +1,7 @@
 import api from '../api/axios.js'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-
+import { useAuth } from '../context/AuthContext.jsx'
 import { Button } from "@/components/ui/button"
 
 import DashboardCard from '@/components/dashboard/DashboardCard.jsx'

@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useContext, useEffect } from "react"
 import { createContext, useState } from "react"
 
 // by making the CONTEXT we are storing the user Login information ONCE and let every componet use it as a authentication
@@ -11,31 +11,36 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
 
     const  [isAuthenticated, setisAuthenticated] = useState(false)
-    const [token, setToken] = useState(localStorage.getItem("token"))
+    // const [accessToken, setAccessToken] = useState(localStorage.getItem("token"))
 
     useEffect(() => {
-        if (localStorage.getItem("token")) {
+        const accessToken = localStorage.getItem("accessToken")
+
+        if (accessToken) {
             setisAuthenticated(true)
         }
     }, [])
 
-    const login = (token) => {
-        localStorage.setItem("token", token)
+    const login = () => {
         setisAuthenticated(true)
-        setToken(token)    
     }
 
     const logout = () => {
-        localStorage.removeItem("token")
+        localStorage.removeItem("accessToken")
+        localStorage.removeItem("refreshToken")
         setisAuthenticated(false)
     }
 
     return (
 
         // here value="" <- is the data that we wanted to share with every component
-        <AuthContext.Provider value={{ isAuthenticated , login, logout, token}}>
+        <AuthContext.Provider value={{ isAuthenticated , login, logout}}>
             {children}
         </AuthContext.Provider>
     )
 
+}
+
+export const useAuth = () => {
+    return useContext(AuthContext)
 }
