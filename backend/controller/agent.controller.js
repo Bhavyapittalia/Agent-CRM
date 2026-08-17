@@ -83,7 +83,7 @@ export const loginAgent = async (req, res) => {
             },
             process.env.JWT_REFRESH_SECRET,
             {
-                expiresIn: "1m"
+                expiresIn: "10m"
             }
         )
 
@@ -120,17 +120,14 @@ export const refreshAccessToken = async (req, res) => {
         if (!refreshToken) {
             return res.status(401).json({
                 success: true,
-                error: "Token Invalid"
+                error: "Token Not given"
             })
         }
-        
-        // if (jwt.TokenExpiredError) {
-            
-        // }
 
         console.log("decoding...")
-        console.log("key is: ", process.env.JWT_REFRESH_SECRET)
+        // console.log("key is: ", process.env.JWT_REFRESH_SECRET)
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
+
         console.log("REFRESH IS STILL VALID!!!")
         console.log("decoded in refresh token contains: ", decoded)
 

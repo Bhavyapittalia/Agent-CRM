@@ -11,7 +11,8 @@ const api = axios.create({
 api.interceptors.request.use(
 
     (config) => {
-        // console.log("request interceptore is runningggg.....")
+
+        console.log("request interceptore is runningggg.....")
         const accessToken = localStorage.getItem("accessToken");
 
         // console.log("config is: ", config)
@@ -40,27 +41,35 @@ api.interceptors.response.use(
     async (error) => {
         // console.log("Error Occuriingg...", error.response)
         const refreshToken = localStorage.getItem("refreshToken")
+        console.log("error response is: ", error)
 
+        let flag = false
         if (error.response.status == 401) {
+            
+            console.log("401")
 
-            try {
-                const response = await api.post("/agent/refresh", { refreshToken: refreshToken })
-                // console.log("API request is over and the ACCESS token is generated")
-                console.log("response of refresh API is: ", response)
-                const newAccessToken = response.data.accessToken
-                localStorage.setItem("accessToken", newAccessToken)
+            if (!flag) {
+                try {
+                    const response = await api.post("/agent/refresh", { refreshToken: refreshToken })
     
-                // now passing the new token into the request after the old access token is expired
-                const passingNewToken = error.config
-                passingNewToken.headers.Authorization = newAccessToken
-                // console.log("new toke is: ", passingNewToken)
+                    const newAccessToken = response.data.accessToken
+                    localStorage.setItem("accessToken", newAccessToken)
     
-                return api(passingNewToken)
+                    // now passing the new token into the request after the old access token is expired
+                    const passingNewToken = error.config
+                    passingNewToken.headers.Authorization = newAccessToken
+
+                    flag = true
+    
+                    // console.log("count is: ", count)
+                    return api(passingNewToken)
+                }
+                catch (error) {
+                    localStorage.clear()
+                    window.location.href = "/login"
+                }
             }
-            catch (error) {
-                localStorage.clear()
-                window.location.href="/login"
-            }
+
         }
         return Promise.reject(error)
     }

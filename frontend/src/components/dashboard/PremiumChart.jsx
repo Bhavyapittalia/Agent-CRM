@@ -11,8 +11,6 @@ const PremiumChart = ({ data }) => {
         return amount += item.totalPremium
     })
 
-    console.log("total premium is: ", amount)
-
     return (
 
         <div className='bg-white rounded-lg shadow-sm border-t-4 p-4 w-full border-t-blue-600'>

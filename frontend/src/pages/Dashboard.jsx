@@ -23,20 +23,17 @@ const Dashboard = () => {
 
     const [premiumData, setPremiumData] = useState([])
 
-    // state for the sidebar
-    const [open, setOpen] = useState(true)
-
-
     const navigate = useNavigate()
 
     const getSummery = async () => {
 
         try {
-            const response = await api.get("/dashboard/summery")
 
-            const upcomingRemainder = await api.get("/dashboard/upcoming-remainder")
-
-            const premiumData = await api.get("/dashboard/analytics")
+            const [response, upcomingRemainder, premiumData] = await Promise.all([
+                api.get("/dashboard/summery"),
+                api.get("/dashboard/upcoming-remainder"),
+                api.get("/dashboard/analytics"),
+            ]);
 
             // monthly expected premium data
             setPremiumData(premiumData.data.formattedData)
@@ -60,17 +57,6 @@ const Dashboard = () => {
             );
 
             setAlert(alerts);
-
-
-            console.log("LAST alert history is: ", alerts)
-
-            console.log("summery is: ", response.data)
-
-            console.log("Upcoming Remainder are: ", upcomingRemainder.data)
-
-            const data = response.data
-
-            console.log("type of data in dashboard is: ", typeof data)
         }
         catch (error) {
             console.log("error occured", error.response)
@@ -110,13 +96,6 @@ const Dashboard = () => {
         }
     ]
 
-    // let amount = 0
-    // premiumData.forEach(item => {
-    //     return amount = amount + item.totalPremium
-    // })
-
-    // console.log("totalPremium is: ", amount)
-
 
     return (
         <div className="flex min-h-screen max-w-[1400px]">
@@ -128,7 +107,7 @@ const Dashboard = () => {
             {/* Dashboard */}
             <div className="flex-1 ml-45  bg-gray-50 px-6 py-8">
                 <div className="">
-                    <div className ="flex items-center justify-center mb-6">
+                    <div className="flex items-center justify-center mb-6">
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -152,7 +131,7 @@ const Dashboard = () => {
                     </div>
 
                     <div className='mt-6'>
-                        <PremiumChart data={premiumData}/>
+                        <PremiumChart data={premiumData} />
                     </div>
                 </div>
             </div>

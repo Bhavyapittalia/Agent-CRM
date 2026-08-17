@@ -20,13 +20,11 @@ const RemainderTable = ({ upcomingFilter, thisWeekRemainder, setUpcomingFilter }
         dueDate.setHours(0, 0, 0, 0);
 
         const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-        console.log("diff is: ", diffDays)
 
         // it will return either "true" or "false" 
         // if policy satisfy condition means "true" then it will get store inside "filterRemainder" else not  
         return diffDays >= 0 && diffDays <= upcomingFilter;
     });
-    console.log("filtered data is: ", filteredRemainders)
 
     return (
 
