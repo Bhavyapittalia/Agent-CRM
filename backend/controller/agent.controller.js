@@ -83,7 +83,7 @@ export const loginAgent = async (req, res) => {
             },
             process.env.JWT_REFRESH_SECRET,
             {
-                expiresIn: "10m"
+                expiresIn: "1h"
             }
         )
 

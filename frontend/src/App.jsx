@@ -4,7 +4,7 @@ import './App.css'
 import Login from './pages/Login'
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Dashboard from './pages/Dashboard'
-import Clients from './lib/Clients'
+import Clients from './pages/Clients'
 import AddClients from './pages/AddClients'
 import Policy from './pages/ClientPolicy'
 import AddPolicy from './pages/AddPolicy'

@@ -24,15 +24,34 @@ const Clients = () => {
 
     const getClients = async () => {
         try {
-            const response = await api.get("/client")
 
-            // storing data into variable then set it to the state to use it int this function 
-            const clients = response.data.clients
-            setClient(clients)
-            // console.log("Clients are: ", clients)
+            // 1st method to call an API
+            // const response = await api.get("/client")
 
+            // 2nd method to call an API
+            console.log("clients api is ", api.get("/client"))
+            api.get("/client").then((response) => {
+                console.log("clients API response is: ", response.data)
+                const clients = response.data.clients
+                setClient(clients)
+            })
+            
             const upcomingResponse = await api.get("/client/upcoming-premium")
-            setClientUpcomingPolicy(upcomingResponse.data.upcomingPremiums)
+            api.get("/client/upcoming-premium").then((response) => {
+                console.log("upcoming premium API response is:", response.data)
+                setClientUpcomingPolicy(response.data.upcomingPremiums)
+            })
+
+            // 3RD way
+            // calling API with the Promise.All() to avoid "parallism and follow concurrent approrach"
+            // const [clientResponse, upcomingResponse] = Promise.all([
+            //     api.get("/client"),
+            //     api.get("/client/upcoming-premium")
+            // ])
+
+            // setClient(clientResponse.data.clients)
+            // setClientUpcomingPolicy(upcomingResponse.data.upcomingPremiums)
+
         }
         catch (error) {
             console.log("error is: ", error.response)
