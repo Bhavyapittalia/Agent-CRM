@@ -5,6 +5,9 @@ import { AgentRegisterSchema, AgentLoginSchema } from '../zodValidation/agent.zo
 import { ZodError } from 'zod'
 import * as z from 'zod'
 import jwt from 'jsonwebtoken'
+import pkg from 'jsonwebtoken';
+
+const { TokenExpiredError } = pkg
 
 export const registerAgent = async (req, res) => {
 
@@ -83,7 +86,7 @@ export const loginAgent = async (req, res) => {
             },
             process.env.JWT_REFRESH_SECRET,
             {
-                expiresIn: "1h"
+                expiresIn: "10m"
             }
         )
 
@@ -99,7 +102,7 @@ export const loginAgent = async (req, res) => {
 
 
     }
-    catch (error) { 
+    catch (error) {
         return res.status(500).send({
             success: false,
             error: error.message,
@@ -147,6 +150,7 @@ export const refreshAccessToken = async (req, res) => {
         })
     }
     catch (error) {
+
         return res.status(504).json({
             success: false,
             error: error.message,

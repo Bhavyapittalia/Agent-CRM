@@ -40,7 +40,6 @@ const Login = () => {
                 password: user.password
             })
 
-            // if (response.status)
 
             localStorage.setItem("accessToken", response.data.accessToken)
             localStorage.setItem("refreshToken", response.data.refreshToken)
@@ -81,6 +80,7 @@ const Login = () => {
                                 onChange={handleChange}
                                 autoComplete="off"
                                 className=" h-8 text-sm  border border-gray-300 hover:border-blue-500 focus:border-blue-600 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:border-blue-500 "
+                                required
                             />
                         </div>
 
@@ -96,6 +96,7 @@ const Login = () => {
                                     name="password"
                                     onChange={handleChange}
                                     className=" h-8 text-sm  border border-gray-300 hover:border-blue-600 focus:border-blue-800 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:border-blue-500"
+                                    required
                                 />
 
                                 <button

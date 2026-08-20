@@ -33,7 +33,13 @@ const Dashboard = () => {
                 api.get("/dashboard/summery"),
                 api.get("/dashboard/upcoming-remainder"),
                 api.get("/dashboard/analytics"),
-            ]);
+            ])
+
+            // const response = await api.get("/dashboard/summery")
+
+            // const upcomingRemainder = await  api.get("/dashboard/upcoming-remainder")
+
+            // const premiumData = await api.get("/dashboard/analytics")
 
             // monthly expected premium data
             setPremiumData(premiumData.data.formattedData)

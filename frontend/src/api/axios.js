@@ -4,21 +4,20 @@ const api = axios.create({
     baseURL: "http://localhost:3000",
 })
 
-let isRefresh = false
+let isRefreshing = false
 let apiQueue = []
 
+const queueProcess = (error, newToken) => {
 
-const processQueue = (error, token = null) => {
-    failedQueue.forEach((promise) => {
+    apiQueue.forEach((apiPromise) => {
         if (error) {
-            promise.reject(error);
-        } else {
-            promise.resolve(token);
+            return apiPromise.reject(error)
         }
-    });
+        return apiPromise.resolve(newToken)
+    })
 
-    failedQueue = [];
-};
+    apiQueue = []
+}
 
 // this is the "request" interceptor
 // which will run before every API request going from frontend to backend
@@ -26,7 +25,6 @@ const processQueue = (error, token = null) => {
 api.interceptors.request.use(
 
     // axios interceptor create one config object which contains the all the information about the API
-    // like : 
     (config) => {
 
         console.log("request interceptore is runningggg.....")
@@ -61,42 +59,30 @@ api.interceptors.response.use(
 
         if (error.response.status == 401) {
 
+
             console.log("401")
-            if (isRefresh) {
-                console.log("OTHER TWO API'S ARE IN QUEUE RIGHT NOW: ", error.config)
-                // apiQueue.push(error.config)
-                console.log("queue is: ", JSON.stringify(apiQueue))
+
+            if (isRefreshing) {
+
                 return new Promise((resolve, reject) => {
                     apiQueue.push({ resolve, reject })
-                }).then(token => {
-                    apiQueue.headers.Authorization = token
-
-                    api(apiQueue)
                 })
+                .then((newToken) => {
+                    originalRequest.headers.Authorization = newToken
+                    return api(originalRequest)
+                })
+
             }
 
-            isRefresh = true
+            isRefreshing = true
 
             try {
-                console.log("Only first API came here right now!!!")
                 const response = await api.post("/agent/refresh", { refreshToken: refreshToken })
 
                 const newAccessToken = response.data.accessToken
                 localStorage.setItem("accessToken", newAccessToken)
 
-                console.log("queue is: ", apiQueue)
-
-                while (apiQueue.length > 0) {
-
-                    // getting all API's form the queue
-                    const remainingApi = apiQueue.shift()
-                    console.log("remaining api are: ", remainingApi)
-
-                    remainingApi.headers.Authorization = newAccessToken
-                    await api(remainingApi)
-                }
-
-                // processQueue(null, newAccessToken);
+                queueProcess(null, newAccessToken)
 
                 // now passing token into  new config after the old access token is expired
                 // error.config contains the failed API  
@@ -104,11 +90,14 @@ api.interceptors.response.use(
                 console.log("error.config is: ", error.config)
                 passingNewConfig.headers.Authorization = newAccessToken
 
-                isRefresh = false
+                isRefreshing = false
                 // console.log("queue contains: ", apiQueue)
                 return api(passingNewConfig)
             }
             catch (error) {
+                queueProcess(error, null)
+
+                isRefreshing = false
                 localStorage.clear()
                 window.location.href = "/login"
             }
