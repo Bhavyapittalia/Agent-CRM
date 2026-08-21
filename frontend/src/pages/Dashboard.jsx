@@ -28,31 +28,32 @@ const Dashboard = () => {
     const getSummery = async () => {
 
         try {
-
-            const [response, upcomingRemainder, premiumData] = await Promise.all([
+            console.log("firing all the dashboard api")
+            const [response, upcomingRemainder, premiumData] = await Promise.allSettled([
                 api.get("/dashboard/summery"),
                 api.get("/dashboard/upcoming-remainder"),
                 api.get("/dashboard/analytics"),
             ])
+            console.log("all the dashboard api are fired")
 
-            // const response = await api.get("/dashboard/summery")
 
-            // const upcomingRemainder = await  api.get("/dashboard/upcoming-remainder")
+            if (premiumData.status === 'fulfilled' && premiumData.value) {
+                console.log("api status is correct")
+                setPremiumData(premiumData.value.data.formattedData);
+            }
 
-            // const premiumData = await api.get("/dashboard/analytics")
+            if (response.status === 'fulfilled' && response.value) {
+                setSummery(response.value.data)
+            }
 
-            // monthly expected premium data
-            setPremiumData(premiumData.data.formattedData)
+            if (upcomingRemainder.status === 'fulfilled' && upcomingRemainder.value) {
+                console.log("second api status is also correct", upcomingRemainder.value.data.policyInfo)
+                setThisWeekRemainder(upcomingRemainder.value.data.policyInfo)
+            }
 
-            // this week remainder data
-            setThisWeekRemainder(upcomingRemainder.data.policyInfo)
-
-            // cards summery data
-            setSummery(response.data)
-
-            // as policies data is inside res.data.lastCron.policiesData
+            // as policies data is inside res.data.lastCron.policiesData        
             // that wise we need to do first flatMap and then map to access the policiesData
-            const alerts = response.data.filteredCron.flatMap((cron) =>
+            const alerts = response.value.data.filteredCron.flatMap((cron) =>
                 cron.policiesDetail.map((policy) => ({
                     clientName: policy.clientName, // clientname is added afterwards in cronSchema.policiesDetail 
                     amount: policy.amount,

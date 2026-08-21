@@ -1,23 +1,11 @@
 import axios from "axios";
+import { queueProcess, apiQueue } from "@/utils/queue.process";
 
 const api = axios.create({
     baseURL: "http://localhost:3000",
 })
 
 let isRefreshing = false
-let apiQueue = []
-
-const queueProcess = (error, newToken) => {
-
-    apiQueue.forEach((apiPromise) => {
-        if (error) {
-            return apiPromise.reject(error)
-        }
-        return apiPromise.resolve(newToken)
-    })
-
-    apiQueue = []
-}
 
 // this is the "request" interceptor
 // which will run before every API request going from frontend to backend
@@ -53,30 +41,29 @@ api.interceptors.response.use(
     },
 
     async (error) => {
-        // console.log("Error Occuriingg...", error.response)
-        const refreshToken = localStorage.getItem("refreshToken")
-        console.log("error response is: ", error)
-
+        
         if (error.response.status == 401) {
-
-
+            
+            
             console.log("401")
-
+            
             if (isRefreshing) {
-
+                
                 return new Promise((resolve, reject) => {
                     apiQueue.push({ resolve, reject })
                 })
                 .then((newToken) => {
-                    originalRequest.headers.Authorization = newToken
-                    return api(originalRequest)
+                    error.config.headers.Authorization = newToken
+                    return api(error.config)
                 })
-
+                
             }
-
+            
             isRefreshing = true
-
+            
             try {
+                const refreshToken = localStorage.getItem("refreshToken")
+
                 const response = await api.post("/agent/refresh", { refreshToken: refreshToken })
 
                 const newAccessToken = response.data.accessToken
@@ -96,8 +83,8 @@ api.interceptors.response.use(
             }
             catch (error) {
                 queueProcess(error, null)
-
                 isRefreshing = false
+
                 localStorage.clear()
                 window.location.href = "/login"
             }

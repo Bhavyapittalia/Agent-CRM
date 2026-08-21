@@ -6,6 +6,7 @@ import { ZodError } from 'zod'
 import * as z from 'zod'
 import jwt from 'jsonwebtoken'
 import pkg from 'jsonwebtoken';
+import { jwtToken } from '../helpers/jwt.token.js'
 
 const { TokenExpiredError } = pkg
 
@@ -67,28 +68,10 @@ export const loginAgent = async (req, res) => {
                 error: "Invalid password"
             })
         }
+        console.log("time: ",  Number(process.env.ACCESS_TOKEN_EXPIRY_TIME))
+        const accessToken = jwtToken(agent._id, process.env.JWT_SECRET, Number(process.env.ACCESS_TOKEN_EXPIRY_TIME))
 
-        const accessToken = jwt.sign(
-            {
-                // will be useful when we need to assign client with agentId wise
-                // here we are putting the agentId in the token PAYLOAD
-                agentId: agent._id
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1m"
-            }
-        )
-
-        const refreshToken = jwt.sign(
-            {
-                agentId: agent._id
-            },
-            process.env.JWT_REFRESH_SECRET,
-            {
-                expiresIn: "10m"
-            }
-        )
+        const refreshToken = jwtToken(agent._id, process.env.JWT_REFRESH_SECRET, Number(process.env.REFRESH_TOKEN_EXPIRY_TIME))
 
         return res.status(200).json({
             succuess: true,
@@ -130,19 +113,8 @@ export const refreshAccessToken = async (req, res) => {
         console.log("decoding...")
         // console.log("key is: ", process.env.JWT_REFRESH_SECRET)
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
-
-        console.log("REFRESH IS STILL VALID!!!")
-        console.log("decoded in refresh token contains: ", decoded)
-
-        const accessToken = jwt.sign(
-            {
-                agentId: decoded.agentId
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1m"
-            }
-        )
+        console.log("decoded value is: ", decoded)
+        const accessToken = jwtToken(decoded.agentId, process.env.JWT_SECRET, Number(process.env.ACCESS_TOKEN_EXPIRY_TIME))
 
         return res.status(202).json({
             success: true,
