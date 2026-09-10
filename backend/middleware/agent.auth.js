@@ -6,6 +6,7 @@ import { Client } from '../models/client.js'
 export const checkToken = (req, res, next) => {
     try {
 
+        console.log("check token is also running...")
         // this will given by the client when they are using application
         const token = req.headers.authorization
 

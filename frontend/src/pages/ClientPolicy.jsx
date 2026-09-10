@@ -31,12 +31,24 @@ const ClientPolicy = () => {
             
             // client Information
             const clientInfo = await api.get(`/client/${id}`)
-    
             setClient({ ...clientInfo.data.clients, dateOfBirth: formatDate(clientInfo.data.clients.dateOfBirth) })
 
         }
         catch (error) {
             console.log("error: ", error.message)
+        }
+    }
+
+    // sending alert to the client manually
+    const sentAlert = async (policyId) => {
+        console.log("sent alert is running after click")
+
+        try {
+            await api.get(`/policy/send-alert/${policyId}`)
+            toast.success("alert sent successfully")
+        }
+        catch (error) {
+            console.log(error)
         }
     }
 
@@ -96,7 +108,8 @@ const ClientPolicy = () => {
 
                     {/* client all policies table */}
                     <ClientPoliciesTable 
-                    policies={policies} 
+                    policies={policies}
+                    sentAlert={sentAlert}
                     id={id}
                     />
 

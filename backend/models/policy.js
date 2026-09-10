@@ -88,14 +88,34 @@ const policyDetail = new mongoose.Schema({
         default: 'Active',
     },
 
+    policyVarient: {
+        type: String,
+        enum: ['Basic', 'Elite', 'Uplift', 'Other'],
+        default: 'Other'
+    },
+
+    policyInssuranceType: {
+        type: String,
+        enum: ['Fresh', 'Renewal'],
+        default: 'Fresh'
+    },
+
     documents: [
         {
-            docType: {
+            fileName: {
                 type: String,
-                enum: ['Policy Bond', 'Premium Receipt', 'Proposal Form', 'Other'],
+                required: true
             },
-            fileUrl: { type: String }, // path or cloud URL
-            uploadedAt: { type: Date, default: Date.now },
+
+            filePath: {
+                type: String,
+                required: true
+            },
+
+            uploadedAt: {
+                type: Date,
+                default: Date.now 
+            }
         },
     ],
 

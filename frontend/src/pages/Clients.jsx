@@ -29,14 +29,12 @@ const Clients = () => {
             // const response = await api.get("/client")
 
             // 2nd method to call an API
-            console.log("clients api is ", api.get("/client"))
             api.get("/client").then((response) => {
                 console.log("clients API response is: ", response.data)
                 const clients = response.data.clients
                 setClient(clients)
             })
             
-            const upcomingResponse = await api.get("/client/upcoming-premium")
             api.get("/client/upcoming-premium").then((response) => {
                 console.log("upcoming premium API response is:", response.data)
                 setClientUpcomingPolicy(response.data.upcomingPremiums)

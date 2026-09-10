@@ -11,7 +11,6 @@ export const addClient = async (req, res) => {
 
         // here req.agent means we have already passed an "agent" from loginAgent route 
         // so we can access it by "agentId: req.agent.agentId" and passing it to the agentId that we created in clientSchema
-
         const client = await Client.create({ ...req.body, agentId: req.agent.agentId })
 
         console.log("client detail are: ", client)

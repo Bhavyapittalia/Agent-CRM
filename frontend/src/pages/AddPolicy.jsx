@@ -11,10 +11,22 @@ import { toast } from 'sonner'
 
 const AddPolicy = () => {
 
-    const [policy, setPolicy] = useState({})
+    const [policy, setPolicy] = useState({
+        policyNumber: "",
+        policyName: "",
+        premiumAmount: "",
+        paymentMode: "",
+        nextPaymentDate: "",
+        policyStartDate: "",
+        policyEndDate: "",
+        email: "",
+        customerId: ""
+    });
+
+    const [pdfId, setPdfId] = useState(null)
+    const [pdfFile, setPdfFile] = useState(null)
 
     const { id } = useParams()
-    console.log("ID in Add policy is: ", id)
 
     const navigate = useNavigate()
 
@@ -45,6 +57,49 @@ const AddPolicy = () => {
     }
 
 
+
+    // this function for uploading pdf
+    const uploadPdf = async (selectedFile) => {
+
+        try {
+            console.log("it's running.........")
+            setPdfFile(selectedFile)
+            
+            const formData = new FormData()
+            
+            // directly using the argument here as the setPdfFile State is not updated yet 
+            formData.append("policyPdf", selectedFile)
+
+            const response = await api.post("/policy/upload-policy", formData)
+
+            setPdfId(response.data.pdfId)
+            
+            toast.success("PDF Uploaded successfully")
+        }
+        catch (error) {
+            toast.error("Fail")
+        }
+    }
+    
+    console.log("setpolicy is: ", pdfId)
+
+    // this function is for extracting pdf data
+    const extractPdfData = async () => {
+        try {
+            console.log("and the pdf id is: ", pdfId)
+
+            const response = await api.post('/policy/extract-policy', { pdfId: pdfId })
+            console.log(response)
+            setPolicy(response.data.policyData)
+
+        } catch (error) {
+            console.log("PDF extraction error:", error)
+            toast.error("Failed to extract policy details")
+        }
+    }
+
+
+
     return (
 
         <div className="min-h-screen bg-slate-100 px-6 py-8">
@@ -57,7 +112,25 @@ const AddPolicy = () => {
 
                         <div className="mt-2 h-px w-full bg-blue-100"></div>
 
-                        <form onSubmit={addPolicy} className="space-y-5 max-h-[600px]">
+                        <form onSubmit={addPolicy} className="space-y-5 max-h-[70vh] overflow-y-auto pr-3">
+                            <div>
+                                <label className="text-sm font-medium">
+                                    Upload Policy PDF
+                                </label>
+
+                                <Input type="file" accept=".pdf"
+                                    onChange={(e) => uploadPdf(e.target.files[0]) }
+                                    className="mt-2" />
+                            </div>
+
+                            <Button
+                                type="button"
+                                onClick={extractPdfData}
+                                className="mt-3"
+                            >
+                                Extract Policy Details
+                            </Button>
+
                             {/* Policy Number */}
                             <div>
                                 <label className="text-sm font-medium text-slate-500 flex mt-10">
@@ -99,7 +172,7 @@ const AddPolicy = () => {
                                 <Input
                                     type="number"
                                     name="policyAmount"
-                                    value={policy.policyAmount}
+                                    value={policy.premiumAmount}
                                     onChange={handleChange}
                                     required
                                     className="mt-2 h-10 w-full rounded-xl border border-blue-200 focus:border-blue-500 focus-visible:ring-0"

@@ -14,6 +14,10 @@ const app = express()
 const port = 3000
 
 dotenv.config()
+
+// connectiong database
+connectDB()
+
 // a middleware which will parse the incoming request data into JSON format
 app.use(express.json())
 
@@ -26,9 +30,6 @@ app.use('/client', client_router)
 app.use('/policy', policy_router)
 app.use('/dashboard', dashboard_router)
 app.use('/dashboard/analytics', analytics_router)
-
-// connectiong database
-connectDB()
 
 app.get('/', (req, res) => {
   res.send('Hello World server is running!')

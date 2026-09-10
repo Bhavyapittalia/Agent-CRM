@@ -37,7 +37,7 @@ export const dashboardSummery = async (req, res) => {
 
     const dueToday = await Policy.countDocuments({ agentId: req.agent.agentId, nextPaymentDate: { $gte: startDate, $lte: endDate } })
 
-
+    
     // finding total policies which have "Due This Week" 
     const dueThisWeek = await Policy.countDocuments({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } })
 
