@@ -8,5 +8,4 @@ const connection = new IORedis({
 });
 
 // creating the queue name  "pdf-prosseing"
-// redis is running inside the docker
-export const pdfQueue = new Queue("pdf-processing", { connection ,});
+export const pdfQueue = new Queue("pdf-processing", { connection });

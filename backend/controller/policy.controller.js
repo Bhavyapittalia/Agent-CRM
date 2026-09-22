@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from "path";
 import { pdfFile } from "../models/pdf.file.js";
 import { jobStatus } from "../models/job.status.js";
+import { pdfQueue } from "../queue/pdf.queue.js";
 // import { startExtractionJob } from "../services/pdf.extraction.js";
 
 
@@ -15,14 +16,24 @@ export const addPolicy = async (req, res) => {
     //        ^                         ^
     //        |-> is created in schema  |--> and this clientId is created in route 
     try {
-        const policy = await Policy.create({ ...req.body, clientId: req.params.clientId, agentId: req.agent.agentId })
 
+        console.log("add policy is running... and policy data is: ", req.body)
+
+        const pdfId = req.body.pdfId
+        console.log("pdf id in backend is: ", pdfId)
+
+        const policy = await Policy.create({ ...req.body, clientId: req.params.clientId, agentId: req.agent.agentId})
         console.log("policy client and his id is: ", policy)
+
+        const updatingStatus = await jobStatus.findOneAndUpdate({ fileId: pdfId }, { verification: 'completed' }, {new: true} )
+
+        console.log("job status is: ", updatingStatus)
 
         return res.status(202).json({
             success: true,
             policy
         })
+
     }
     catch (error) {
         return res.status(500).json({
@@ -234,6 +245,24 @@ export const sendAlert = async (req, res) => {
     })
 }
 
+
+// delete policy API
+export const deletePolicy = async (req, res) => {
+    
+    const { policyId } = req.params
+    console.log("delete policy API got this ID: ", policyId)
+
+    const policy = await Policy.findByIdAndDelete( {_id: policyId} )
+    console.log("delted policy is: ", policy)
+
+    return res.status(200).json({
+        success: true
+    })
+
+}
+
+
+
 // export const uploadPolicyPdf = async (req, res) => {
 
 //     try {
@@ -333,34 +362,39 @@ export const uploadPolicyPdf = async (req, res) => {
 export const extractPdf = async (req, res) => {
 
     try {
+        const { pdfId, clientId } = req.body
         console.log("Pdf id in backend is: ", req.body.pdfId)
-    
-        const pdf = await pdfFile.findById({ _id: req.body.pdfId })
-        console.log("PDF found is: ", pdf) 
 
-        // inserting the fileId in jobStatus schema
-        const extractionJob = await jobStatus.create({ fileId: pdf._id })
-        console.log("job id: ", extractionJob)
+        const pdf = await pdfFile.findById({ _id: req.body.pdfId })
+        console.log("PDF found is: ", pdf)
+
+        if (!pdf) {
+            return res.status(404).json({
+                success: false,
+                error: "PDF not found"
+            })
+        }
+
+        // creating and inserting the fileId in jobStatus schema
+        const jobCreation = await jobStatus.create({ agentId: req.agent.agentId, clientId: clientId, fileId: pdf._id, status: "queued" })
 
         // getting file path
         const filePath = path.join(String(process.env.RELATIVE_PATH), pdf.filePath).replace(/\\/g, "/")
         console.log("filePat is: ", filePath)
 
-        // await startExtractionJob(extractionJob._id.toString(), filePath)
+        // adding PDF extraction JOB into Queue
+        const job = await pdfQueue.add('pdf-processing', {
+            pdfId: pdf._id,
+            filePath: filePath
+        })
 
-        console.log("getted data")
-        const getPolicyData = await jobStatus.findOne({fileId: req.body.pdfId})
-        console.log("getted data", getPolicyData)
-        
-        const finalPolicyData = getPolicyData.result
-        console.log("final policy data is: ", finalPolicyData)
-
+        // const currentStatus = await jobStatus.findOne({fileId: fileId})
+        // console.log("job status is: ", currentStatus)
         return res.status(200).json({
             success: true,
-            jobId: extractionJob._id,
-            filePath: extractionJob.filePath,
-            policyData: finalPolicyData 
+            jobId: jobCreation._id
         })
+
     }
     catch (error) {
         return res.status(504).json({
@@ -368,7 +402,63 @@ export const extractPdf = async (req, res) => {
             error: error.messsage,
             stack: error.stack
         })
-    } 
+    }
+}
+
+
+export const getPdfStatus = async (req, res) => {
+    console.log("check status API is running.........")
+
+    try {
+        const fileId = req.params.pdfId
+        console.log("check status API is running... and file id is: ", fileId)
+
+        const status = await jobStatus.findOne({ fileId: fileId })
+        console.log("status is: ", status)
+
+        return res.status(200).json({
+            success: true,
+            status: status.status
+        })
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            status: "failed",
+            error: error.message
+        })
+    }
+}
+
+export const getPdfResult = async (req, res) => {
+
+    try {
+        const { pdfId } = req.params
+
+        const status = await jobStatus.findOne({ fileId: pdfId })
+
+        if (status.status != "completed") {
+            return res.status(404).json({
+                success: false,
+                status: status.status,
+                error: "Pdf extraction is not completed yet"
+            })
+        }
+
+        return res.status(202).json({
+            success: true,
+            status: status.status,
+            result: status.result,
+            jobId: status._id
+        })
+    }
+    catch (error) {
+        return res.status(500).json({
+            sccuess: false,
+            error: error.message,
+            stack: error.stack
+        })
+    }
 }
 
 
@@ -421,41 +511,3 @@ export const viewPdf = async (req, res) => {
         })
     }
 }
-
-
-// export const extractPolicyPdf = async (req, res) => {
-
-//     try {
-
-//         if (!req.file) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Please upload a PDF"
-//             });
-//         }
-
-//         const filePath = req.file.path;
-
-//         console.log("Uploaded PDF path:", filePath);
-
-//         const text = await extractPdfText(filePath);
-
-//         const policyData = niaPolicyData(text);
-
-//         console.log("Extracted policy data:", policyData);
-
-//         return res.status(200).json({
-//             success: true,
-//             policyData: policyData
-//         });
-
-//     } catch (error) {
-
-//         console.error("Error extracting policy PDF:", error);
-
-//         return res.status(500).json({
-//             success: false,
-//             message: "Failed to extract policy data from PDF"
-//         });
-//     }
-// };

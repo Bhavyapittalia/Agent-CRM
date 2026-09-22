@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/axios'
@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+import { formatDate } from '@/utils/format.date'
 
 const AddPolicy = () => {
 
@@ -17,16 +19,22 @@ const AddPolicy = () => {
         premiumAmount: "",
         paymentMode: "",
         nextPaymentDate: "",
-        policyStartDate: "",
-        policyEndDate: "",
+        lastPaymentDate: "",
         email: "",
         customerId: ""
     });
 
     const [pdfId, setPdfId] = useState(null)
     const [pdfFile, setPdfFile] = useState(null)
+    const [extractJobId, setExtractJobId] = useState(null)
+
+    const [isExtracting, setIsExtracting] = useState(false);
 
     const { id } = useParams()
+    const { jobId } = useParams()
+
+    console.log("clinet id is: ", id)
+    console.log("jobid is: ", jobId)
 
     const navigate = useNavigate()
 
@@ -44,7 +52,9 @@ const AddPolicy = () => {
         e.preventDefault()
 
         try {
-            const response = await api.post(`/policy/add-policy/${id}`, { policyNumber: policy.policyNumber, policyName: policy.policyName, policyAmount: policy.policyAmount, paymentMode: policy.paymentMode, nextPaymentDate: policy.nextPaymentDate })
+            console.log("add policy function is running...")
+            console.log("job id in add policy is: ", jobId)
+            const response = await api.post(`/policy/add-policy/${id}`, { policyNumber: policy.policyNumber, policyName: policy.policyName, policyAmount: policy.premiumAmount, nextPaymentDate: policy.nextPaymentDate, lastPremiumPaidDate: policy.lastPaymentDate, jobId: extractJobId, pdfId: pdfId })
 
             toast.success("Policy Added Successfully")
             console.log("policy entered data is: ", policy)
@@ -64,23 +74,24 @@ const AddPolicy = () => {
         try {
             console.log("it's running.........")
             setPdfFile(selectedFile)
-            
+
             const formData = new FormData()
-            
+
             // directly using the argument here as the setPdfFile State is not updated yet 
             formData.append("policyPdf", selectedFile)
 
+            // upload PDF API
             const response = await api.post("/policy/upload-policy", formData)
 
+            // getting that stored pdfId into the frontend back
             setPdfId(response.data.pdfId)
-            
-            toast.success("PDF Uploaded successfully")
+
         }
         catch (error) {
             toast.error("Fail")
         }
     }
-    
+
     console.log("setpolicy is: ", pdfId)
 
     // this function is for extracting pdf data
@@ -88,9 +99,15 @@ const AddPolicy = () => {
         try {
             console.log("and the pdf id is: ", pdfId)
 
-            const response = await api.post('/policy/extract-policy', { pdfId: pdfId })
-            console.log(response)
-            setPolicy(response.data.policyData)
+            toast.success("PDF extraction start")
+
+            // extract PDF DATA API
+            const response = await api.post('/policy/extract-policy', { pdfId: pdfId, clientId: id })
+            setIsExtracting(true);
+            setExtractJobId(response.data.jobId)
+
+            console.log("/extract-policy response is: ", response)
+
 
         } catch (error) {
             console.log("PDF extraction error:", error)
@@ -98,126 +115,304 @@ const AddPolicy = () => {
         }
     }
 
+    console.log("JOB ID IS: ", jobId)
+
+    const checkPdfStatus = async () => {
+        try {
+
+            // check status of pdf API
+            const response = await api.get(`/policy/status/${pdfId}`)
+            console.log("response of status API is: ", response.data)
+
+            const { status } = response.data
+
+            if (status === "completed") {
+
+                // get pdf result on status "complete" API
+                const resultResponse = await api.get(`/policy/result/${pdfId}`)
+
+                const result = resultResponse.data.result
+
+                console.log("PDF result is: ", resultResponse.data)
+
+                if (result.message === "Invalid PDF") {
+                    toast.error("Invalid Pdf")
+                    setIsExtracting(false)
+                    return
+                }
+
+                setPolicy((prev) => ({
+                    ...prev,
+                    policyNumber: result.policyNumber,
+                    policyName: result.policyName,
+                    premiumAmount: result.premiumAmount,
+                    email: result.email,
+                    customerId: result.customerId,
+                    nextPaymentDate: formatDate(result.nextPaymentDate),
+                    lastPaymentDate: formatDate(result.startDate)
+                }))
+
+                toast.success("Policy details extracted successfully");
+
+                return true;
+            }
+
+            if (status === "failed") {
+                toast.error(error || "PDF extraction failed");
+                return true;
+            }
+
+            return false
+
+        }
+        catch (error) {
+            console.log(error)
+            return true
+        }
+    }
+
+    console.log("POLICY DATA IS: ", policy)
+
+
+    // this function is for showing up the pending task for PDF
+    const getPendingPdf = async () => {
+
+        try {
+            console.log("job id is: ", jobId)
+            console.log("get pending is runnning...")
+
+            const responseResult = await api.get(`/dashboard/pending-task-result/${id}/${jobId}`)
+            console.log("pending task PDF data is: ", responseResult.data)
+
+            const response = responseResult.data.result
+
+            setPolicy((prev) => ({
+                ...prev,
+                policyNumber: response.policyNumber,
+                policyName: response.policyName,
+                premiumAmount: response.premiumAmount,
+                email: response.email,
+                customerId: response.customerId,
+                nextPaymentDate: formatDate(response.nextPaymentDate),
+                lastPaymentDate: formatDate(response.startDate)
+            }))
+            toast.success("pending PDF")
+        }
+        catch (error) {
+            console.log("error in pending task", error)
+        }
+
+    }
+
+    useEffect(() => {
+        getPendingPdf()
+    }, [])
+
+
+
+    useEffect(() => {
+
+        if (!pdfId || !isExtracting) {
+            return;
+        }
+
+        let interval;
+
+        const startPolling = async () => {
+
+            const finished = await checkPdfStatus();
+
+            if (finished) {
+                setIsExtracting(false);
+                clearInterval(interval);
+            }
+        };
+
+        interval = setInterval(startPolling, 2000);
+
+        return () => {
+            clearInterval(interval);
+        };
+
+    }, [pdfId, isExtracting]);
 
 
     return (
 
-        <div className="min-h-screen bg-slate-100 px-6 py-8">
-            <div className="max-w-[35%] mx-auto">
+        <div className="min-h-screen  px-6 py-8">
+            <div className="max-w-3xl mx-auto">
                 <Card className="border-t-4 border-t-blue-600 shadow-sm ring-0 rounded-2xl">
-                    <CardContent className="pt-6">
-                        <p className="text-2xl font-semibold mb-1 text-black">
+                    <CardContent className="pt-0">
+                        <p className="text-xl font-semibold  text-black">
                             Add Policy
                         </p>
 
                         <div className="mt-2 h-px w-full bg-blue-100"></div>
 
-                        <form onSubmit={addPolicy} className="space-y-5 max-h-[70vh] overflow-y-auto pr-3">
-                            <div>
-                                <label className="text-sm font-medium">
+                        <form onSubmit={addPolicy} className="space-y-6">
+
+                            {/* PDF Upload */}
+                            <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 mt-1">
+                                <label className="text-sm font-medium text-black">
                                     Upload Policy PDF
                                 </label>
 
-                                <Input type="file" accept=".pdf"
-                                    onChange={(e) => uploadPdf(e.target.files[0]) }
-                                    className="mt-2" />
+                                <div className="flex items-center gap-3 mt-2">
+                                    <Input
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={(e) => uploadPdf(e.target.files[0])}
+                                        className="bg-white h-9 w-60 ml-50"
+                                    />
+
+                                    <Button
+                                        type="button"
+                                        onClick={extractPdfData}
+                                        disabled={isExtracting}
+                                        className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap h-9"
+                                    >
+                                        {isExtracting ? (
+                                            <div className="flex items-center">
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Extracting...
+                                            </div>
+                                        ) : (
+                                            "Extract Details"
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
 
-                            <Button
-                                type="button"
-                                onClick={extractPdfData}
-                                className="mt-3"
-                            >
-                                Extract Policy Details
-                            </Button>
 
-                            {/* Policy Number */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-500 flex mt-10">
-                                    Policy Number
-                                </label>
+                            {/* Policy Number - Center */}
+                            <div className="flex justify-center">
+                                <div className="w-full max-w-sm">
+                                    <label className="text-sm font-medium text-black">
+                                        Policy Number
+                                    </label>
 
-                                <Input
-                                    type="text"
-                                    name="policyNumber"
-                                    value={policy.policyNumber}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-2 h-10 rounded-xl  focus-visible:ring-0 border border-blue-200 focus:border-blue-500 w-full"
-                                />
+                                    <Input
+                                        type="text"
+                                        name="policyNumber"
+                                        value={policy.policyNumber}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 text-center"
+                                    />
+                                </div>
                             </div>
 
-                            {/* Policy Name */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-500 flex mt-5">
-                                    Policy Name
-                                </label>
 
-                                <Input
-                                    type="text"
-                                    name="policyName"
-                                    value={policy.policyName}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-2 h-10 w-full rounded-xl border border-blue-200 focus:border-blue-500 focus-visible:ring-0"
-                                />
+                            {/* Other Fields */}
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+
+                                {/* Customer ID */}
+                                <div>
+                                    <label className="text-sm font-medium text-black">
+                                        Customer ID
+                                    </label>
+
+                                    <Input
+                                        type="text"
+                                        name="customerId"
+                                        value={policy.customerId}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 text-center"
+                                    />
+                                </div>
+
+
+                                {/* Email */}
+                                <div>
+                                    <label className="text-sm font-medium text-black">
+                                        Email
+                                    </label>
+
+                                    <Input
+                                        type="email"
+                                        name="email"
+                                        value={policy.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 text-center"
+                                    />
+                                </div>
+
+
+                                {/* Policy Name */}
+                                <div>
+                                    <label className="text-sm font-medium text-black">
+                                        Policy Name
+                                    </label>
+
+                                    <Input
+                                        type="text"
+                                        name="policyName"
+                                        value={policy.policyName}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 text-center"
+                                    />
+                                </div>
+
+
+                                {/* Premium Amount */}
+                                <div>
+                                    <label className="text-sm font-medium text-black">
+                                        Premium Amount
+                                    </label>
+
+                                    <Input
+                                        type="number"
+                                        name="premiumAmount"
+                                        value={policy.premiumAmount}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 text-center"
+                                    />
+                                </div>
+
+
+                                {/* Last Payment Date */}
+                                <div>
+                                    <label className="text-sm font-medium text-black">
+                                        Last Payment Date
+                                    </label>
+
+                                    <Input
+                                        type="date"
+                                        name="lastPaymentDate"
+                                        value={policy.lastPaymentDate}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 "
+                                    />
+                                </div>
+
+
+                                {/* Next Payment Date */}
+                                <div>
+                                    <label className="text-sm font-medium text-black">
+                                        Next Payment Date
+                                    </label>
+
+                                    <Input
+                                        type="date"
+                                        name="nextPaymentDate"
+                                        value={policy.nextPaymentDate}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 h-9 rounded-xl border-blue-400 focus:border-blue-500 focus-visible:ring-0 "
+                                    />
+                                </div>
+
                             </div>
 
-                            {/* Policy Amount */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-500 flex mt-5">
-                                    Policy Amount
-                                </label>
-
-                                <Input
-                                    type="number"
-                                    name="policyAmount"
-                                    value={policy.premiumAmount}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-2 h-10 w-full rounded-xl border border-blue-200 focus:border-blue-500 focus-visible:ring-0"
-                                />
-                            </div>
-
-                            {/* Payment Mode */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-500 flex mt-5">
-                                    Payment Mode
-                                </label>
-
-                                <select
-                                    name="paymentMode"
-                                    value={policy.paymentMode}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-2 h-10 w-full rounded-xl border border-blue-200 bg-white px-3 text-sm focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="">Select Payment Duration</option>
-                                    <option value="yearly">Yearly</option>
-                                    <option value="monthly">Monthly</option>
-                                    <option value="quarterly">Quarterly</option>
-                                    <option value="half-yearly">Half-Yearly</option>
-                                </select>
-                            </div>
-
-                            {/* Next Payment Date */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-500 flex mt-5">
-                                    Next Payment Date
-                                </label>
-
-                                <Input
-                                    type="date"
-                                    name="nextPaymentDate"
-                                    value={policy.nextPaymentDate}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-2 h-10 w-full rounded-xl border border-blue-200 focus:border-blue-500 focus-visible:ring-0"
-                                />
-                            </div>
 
                             {/* Buttons */}
-                            <div className="flex justify-end gap-3 pt-2">
+                            <div className="flex justify-end gap-3 pt-4 border-t">
+
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -226,10 +421,15 @@ const AddPolicy = () => {
                                     Cancel
                                 </Button>
 
-                                <Button type="submit" className="bg-blue-600 hover:bg-blue-700" onClick={() => navigate(`/clients/policy/${id}`)}>
-                                    Update
+                                <Button
+                                    type="submit"
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                    Add Policy
                                 </Button>
+
                             </div>
+
                         </form>
                     </CardContent>
                 </Card>

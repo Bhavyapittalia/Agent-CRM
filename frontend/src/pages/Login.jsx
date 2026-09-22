@@ -78,7 +78,6 @@ const Login = () => {
                                 type="email"
                                 name="email"
                                 onChange={handleChange}
-                                autoComplete="off"
                                 className=" h-8 text-sm  border border-gray-300 hover:border-blue-500 focus:border-blue-600 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:border-blue-500 "
                                 required
                             />

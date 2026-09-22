@@ -4,18 +4,28 @@ import { extractCustomerId, extractEmail, extractEndDate, extractPolicyName, ext
 
 export const niaPolicyData = (text) => {
 
-    const policyData = {
-        policyNumber: extractPolicyNumber(text),
-        policyName: extractPolicyName(text),
-        // policyPlan: extractPolicyPlan(text),
-        premiumAmount: extractPremiumAmount(text),
-        email: extractEmail(text),
-        customerId: extractCustomerId(text),
-        startDate: extractStartDate(text),
-        endData: extractEndDate(text) 
-    };
+    try {
+        console.log("extraction started")
+        const policyData = {
+            policyNumber: extractPolicyNumber(text),
+            policyName: extractPolicyName(text),
+            // policyPlan: extractPolicyPlan(text),
+            premiumAmount: extractPremiumAmount(text),
+            email: extractEmail(text),
+            customerId: extractCustomerId(text),
+            startDate: extractStartDate(text),
+            nextPaymentDate: extractEndDate(text) 
+        };
+        
+        console.log("log is working")
+        console.log(policyData);    
+        return policyData
+        
+    }
+    catch (error) {
+        console.log("extraction failed")
+        return new Error("Invalid PDF")
+    }
 
-    console.log(policyData);    
-    return policyData
 }
 

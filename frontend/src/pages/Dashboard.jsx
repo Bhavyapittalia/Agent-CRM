@@ -1,14 +1,15 @@
 import api from '../api/axios.js'
 import React, { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import { Button } from "@/components/ui/button"
+import { useNavigate } from 'react-router-dom'
 
 import DashboardCard from '@/components/dashboard/DashboardCard.jsx'
 import RemainderTable from '@/components/dashboard/RemainderTable.jsx'
 import AlertTable from '@/components/dashboard/AlertTable.jsx'
 import Sidebar from '@/components/sidebar/Sidebar.jsx'
 import PremiumChart from '@/components/dashboard/PremiumChart.jsx'
+import { AlertCircle, Bell, Eye, Hourglass, HouseHeart, LucideHourglass, Trash, Upload, WaypointsIcon } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu.jsx'
+import { Button } from '@base-ui/react'
 
 
 const Dashboard = () => {
@@ -103,6 +104,43 @@ const Dashboard = () => {
         }
     ]
 
+    const [pendingTask, setPendingTask] = useState([])
+    const [showPendingPopup, setShowPendingPopup] = useState(false)
+
+    const pending = async () => {
+        const pendingWork = await api.get(`/dashboard/pending-task`)
+        console.log("pending data:", pendingWork.data);
+
+        const task = pendingWork.data.pending
+        setPendingTask(task)
+
+        const popup = sessionStorage.getItem("showPopup")
+
+        if (task.length > 0 && !popup) {
+            setShowPendingPopup(true)
+
+            sessionStorage.setItem("showPopup", "true")
+        }
+
+    }
+
+    const removePendingTask = async (jobId) => {
+
+        await api.delete(`/dashboard/pending-task/${jobId}`)
+
+        setPendingTask((prev) => {
+            return (prev).filter((task) => {
+                return task._id !== jobId
+            })
+        })
+    }
+
+    useEffect(() => {
+        pending()
+    }, [])
+
+    console.log("pending task are: ", pendingTask)
+
 
     return (
         <div className="flex min-h-screen max-w-[1400px]">
@@ -115,6 +153,24 @@ const Dashboard = () => {
             <div className="flex-1 ml-45  bg-gray-50 px-6 py-8">
                 <div className="">
                     <div className="flex items-center justify-center mb-6">
+                    </div>
+
+                    {/* testing of pending */}
+                    <div className="flex justify-end mb-6">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="relative rounded-full hover:bg-gray-100"
+                            onClick={() => setShowPendingPopup(true)}
+                        >
+                            <Hourglass className="h-5 w-5 text-blue-700" />
+
+                            {pendingTask.length > 0 && (
+                                <span className="absolute -top-3 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                                    {pendingTask.length}
+                                </span>
+                            )}
+                        </Button>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -142,6 +198,111 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+
+            {showPendingPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+
+                    <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b px-5 py-4">
+
+                            <div className='items-center ml-30'>
+                                <h2 className="!text-black !font-xs">
+                                    Pending Tasks
+                                </h2>
+
+                                <p className="text-sm text-gray-500">
+                                    {pendingTask.length} task waiting for verification
+                                </p>
+                            </div>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setShowPendingPopup(false)}
+                                className="rounded-full"
+                            >
+                                ✕
+                            </Button>
+
+                        </div>
+
+
+                        {/* Task List */}
+                        <div className="max-h-80 overflow-y-auto p-4">
+
+                            {pendingTask.length === 0 ? (
+
+                                <div className="py-8 text-center text-sm text-gray-500">
+                                    No pending tasks
+                                </div>
+
+                            ) : (
+
+                                <div className="space-y-3">
+
+                                    {pendingTask.map((task) => (
+
+                                        <div
+                                            key={task._id}
+                                            className="flex items-center justify-between rounded-lg border bg-gray-50 px-3 py-3"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setShowPendingPopup(false)
+                                                navigate(`/clients/policy/add-policy/${task.clientId}/${task._id}`)
+                                            }}
+                                        >
+
+                                            {/* PDF information */}
+                                            <div className="flex min-w-0 items-center gap-3">
+
+                                                <Upload className="h-5 w-5 shrink-0 text-blue-600" />
+
+                                                <div className="min-w-0">
+
+                                                    <p className="truncate text-sm font-medium text-gray-800">
+                                                        {task.fileId.originalName}
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            {/* Buttons */}
+                                            <div className="ml-3 flex shrink-0 gap-5">
+
+                                                {/* Remove */}
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        removePendingTask(task._id, e)
+                                                    }}
+                                                >
+                                                    <Trash className="h-5 w-5 text-red-600" /> 
+                                                </Button>
+
+                                            </div>
+
+                                        </div>
+
+                                    ))}
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
         </div>
     );
 

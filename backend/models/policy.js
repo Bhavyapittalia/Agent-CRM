@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const policyDetail = new mongoose.Schema({
 
+    jobId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "jobStatus"
+    },
+
     policyNumber: {
         type: String,
         requried: true
@@ -25,7 +30,7 @@ const policyDetail = new mongoose.Schema({
             "half-yearly",
             "yearly"
         ],
-        requried: true
+        default: "yearly",
     },
 
     premiumPaymentType: {
@@ -35,6 +40,7 @@ const policyDetail = new mongoose.Schema({
 
     nextPaymentDate: {
         type: Date,
+        default: "2026-04-08",
         required: true
     },
 
@@ -103,13 +109,11 @@ const policyDetail = new mongoose.Schema({
     documents: [
         {
             fileName: {
-                type: String,
-                required: true
+                type: String
             },
 
             filePath: {
-                type: String,
-                required: true
+                type: String
             },
 
             uploadedAt: {
@@ -121,8 +125,7 @@ const policyDetail = new mongoose.Schema({
 
     clientId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Client",
-        required: true
+        ref: "Client"
     },
 
     agentId: {

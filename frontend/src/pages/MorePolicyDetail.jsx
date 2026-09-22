@@ -42,7 +42,7 @@ const MorePolicyDetail = () => {
         try {
             const response = await api.get(`/policy/more-info/${id}`);
 
-            setPolicy({ ...response.data.policy, nextPaymentDate: formatDate(response.data.policy.nextPaymentDate), lastPremiumPaidDate: formatDate(response.data.policy.lastPremiumPaidDate), policyStartDate: formatDate(response.data.policy.policyStartDate), policyMaturityDate: formatDate(response.data.policy.policyMaturityDate) })
+            setPolicy({ ...response.data.policy, nextPaymentDate: formatDate(response.data.policy.nextPaymentDate), lastPremiumPaidDate: formatDate(response.data.policy.lastPremiumPaidDate) })
 
             console.log("before updated policy data: ", response.data.policy)
 
@@ -117,7 +117,7 @@ const MorePolicyDetail = () => {
                                     value={policy.policyNumber}
                                     onChange={handleChange}
                                     required
-                                    className="mt-1 h-10 max-w-[40%] ml-27 text-center rounded-xl border border-blue-200 focus:border-blue-500 focus:outline-none font-semibold"
+                                    className="mt-1 h-10 max-w-[60%] ml-18 text-center rounded-xl border border-blue-200 focus:border-blue-500 focus:outline-none font-semibold"
                                 />
                             </div>
 

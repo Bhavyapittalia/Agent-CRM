@@ -1,48 +1,14 @@
-// // this file is for running the nodeJs child process which will run as a seprate nodejs process
-
-// import { parsePdfText } from "../helpers/pdf.parse.js"
-// import { niaPolicyData } from "../services/nia.policy.extractor.js"
-
-// // when parent create child.send("hello") they are sending something to child
-// // when child recive "hello" and work on it and send the result as process.send("hello world")
-// // and this communication is done through IPC 
-// process.on("message", async (job) => {
-//     console.log("Child recevied the Job", job)
-
-//     try {
-//         // parsing the PDF
-//         const text = await parsePdfText(job.filePath)
-    
-//         const policyData = niaPolicyData(text)
-//         console.log("policy data is: ", policyData)
-    
-//         process.send({
-//             type: "completed",
-//             jobId: job.jobId,
-//             policyData: policyData
-//         })
-//     }
-//     catch (error) {
-//         process.send({
-//             type: "failed",
-//             jobId: job.jobId
-//         })
-//     }
-// }) 
-
-
-
-
-
-
-
-
-
-//        testing the code 
-
-
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
+import { jobStatus } from "../models/job.status.js";
+import { parsePdfText } from "../helpers/pdf.parse.js";
+import { niaPolicyData } from "../services/nia.policy.extractor.js";
+import dotenv from "dotenv";
+import connectDB from "../config/db.js";
+
+dotenv.config();
+
+await connectDB();
 
 const connection = new IORedis({
     host: "localhost",
@@ -50,17 +16,47 @@ const connection = new IORedis({
     maxRetriesPerRequest: null,
 });
 
+
 const worker = new Worker(
     "pdf-processing",
     async (job) => {
         console.log("Processing job:", job.id);
         console.log("Job data:", job.data);
+        
+        try {
+            
+            const second = Math.floor(Math.random() * 5000) + 2000
+            console.log(second)
+            // getting the PDF.ID AND FILE_PATH
+            const { pdfId, filePath } = job.data
 
-        // PDF extraction will come here
+            // updatting the shcema to the processing
+            await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'processing' })
+
+            await new Promise((res) => setTimeout(res, second))
+
+            // extracting the text from the PDF
+            const text = await parsePdfText(filePath)
+
+            // extracting the information from the parsed text
+            const policyData = niaPolicyData(text)
+            console.log("extracted policy data is: ", policyData)
+
+            // again updating the DB to the 'complete' status after extracted information
+            // and also putting the "policyData" into DB
+            await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'completed', result: policyData })
+
+            return policyData
+        }
+        catch (error) {
+            console.log("error occured IN WORKER")
+
+            // updating the status DB to 'failed'
+            await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'failed' })
+        }
+
     },
-    {
-        connection,
-    }
+    { connection }
 );
 
 worker.on("completed", (job) => {

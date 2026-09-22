@@ -2,6 +2,7 @@ import { Client } from "../models/client.js"
 import { Agent } from "../models/agent.js"
 import { Policy } from "../models/policy.js"
 import { Cron } from "../models/cronDetails.js"
+import { jobStatus } from "../models/job.status.js"
 
 const todayDate = new Date()
 
@@ -148,4 +149,62 @@ export const getDashboardCardPolicies = async (req, res) => {
         error: "wrong filtering"
     })
 
+}
+
+export const pendingTask = async (req, res) => {
+
+    try {
+        // here populating is done to fetch the PDF name from the other schema to show in UI
+        const pending = await jobStatus.find({agentId: req.agent.agentId, verification: "pending"}).populate("fileId")
+        console.log("pending task are: ", pending)
+    
+        return res.status(200).json({
+            success: true,
+            pending: pending
+        })
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        })
+    }
+} 
+
+
+
+export const pendingTaskResult = async (req, res) => {
+    try {
+        console.log("pending task controller is running")
+        const { id, jobId } = req.params;
+        console.log("job id getted is: ", jobId)
+
+        const job = await jobStatus.findOne({ _id: jobId, agentId: req.agent.agentId });
+        console.log("job found was: ", job)
+
+        return res.status(200).json({
+            success: true,
+            jobId: job._id,
+            pdfId: job.fileId,
+            result: job.result
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+
+export const deleteTask = async (req, res) => {
+    const { jobId } = req.params
+
+    const task = await jobStatus.findByIdAndDelete({ _id: jobId})
+    console.log("deleted task from the jobStatus table is: ", task)
+
+    return res.status(200).json({
+        success: true
+    })
 }

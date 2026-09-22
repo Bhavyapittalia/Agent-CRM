@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 
 import { handleUploadPdf, handleViewPdf } from '@/utils/handle.pdf'
 
-const policyTable = ({ policies, id, sentAlert }) => {
+const policyTable = ({ policies, id, sentAlert, handleDelete }) => {
 
   const [selectedPolicy, setSelectedPolicy] = useState(null)
   const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false)
@@ -62,6 +62,7 @@ const policyTable = ({ policies, id, sentAlert }) => {
                     <TableCell className="font-medium text-center">
 
                       <DropdownMenu>
+                        
                         <DropdownMenuTrigger asChild >
                           <Button
                             variant="ghost"

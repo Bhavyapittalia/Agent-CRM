@@ -62,6 +62,19 @@ const ClientPolicy = () => {
         console.log("updated client data is: ", response.data)
     }
 
+    // delete policy 
+    const handleDelete = async (policyId) => {
+        console.log("handle delete got this id: ", policyId)
+
+        const response = await api.delete(`/policy/delete-policy/${policyId}`)
+
+        // Remove deleted policy from frontend immediately
+        setpolicies((prevPolicies) => prevPolicies.filter((policy) => policy._id !== policyId))
+        // location.reload()
+        
+        console.log("response of handle delete is: ", response.data)
+    }
+
     const handleChange = (e) => {
         setClient((prev) => ({
             ...prev,
@@ -72,6 +85,8 @@ const ClientPolicy = () => {
     useEffect(() => {
         getPolicies()
     }, [])
+
+
 
     return (
 
@@ -110,6 +125,7 @@ const ClientPolicy = () => {
                     <ClientPoliciesTable 
                     policies={policies}
                     sentAlert={sentAlert}
+                    handleDelete={handleDelete}
                     id={id}
                     />
 

@@ -21,9 +21,10 @@ function App() {
 
         <Routes>
 
-          <Route path="/login" element={
+          <Route path="/" element={
             <Login />
-          } />
+          } 
+          />
           <Route
             path="/dashboard"
             element={<Dashboard />}
@@ -48,6 +49,10 @@ function App() {
           } />
 
           <Route path="/clients/policy/add-policy/:id" element={
+            <AddPolicy />
+          } />
+
+          <Route path="/clients/policy/add-policy/:id/:jobId" element={
             <AddPolicy />
           } />
 
