@@ -384,6 +384,7 @@ export const extractPdf = async (req, res) => {
 
         // adding PDF extraction JOB into Queue
         const job = await pdfQueue.add('pdf-processing', {
+            type: "nia-policy",
             pdfId: pdf._id,
             filePath: filePath
         })

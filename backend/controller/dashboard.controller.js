@@ -17,7 +17,6 @@ export const dashboardSummery = async (req, res) => {
 
     // finding total policies of one agent with their details
     const clients = await Client.find({ agentId: req.agent.agentId }, "_id")
-    console.log("all the clients Id's  are: ", clients)
 
     // const totalPolicies = await Policy.countDocuments({
     //     clientId: {
@@ -38,7 +37,7 @@ export const dashboardSummery = async (req, res) => {
 
     const dueToday = await Policy.countDocuments({ agentId: req.agent.agentId, nextPaymentDate: { $gte: startDate, $lte: endDate } })
 
-    
+
     // finding total policies which have "Due This Week" 
     const dueThisWeek = await Policy.countDocuments({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } })
 
@@ -58,10 +57,8 @@ export const dashboardSummery = async (req, res) => {
             // now in policiesDetail we are storing only this req.agent.agentId policies and cron data and others agent's policy and cron data is removed   
             policiesDetail: filteredPolicies
         }
-        
-    })
 
-    console.log("last cron created at: ", lastOneDayCron)
+    })
 
     return res.status(200).json({
         success: true,
@@ -75,10 +72,15 @@ export const dashboardSummery = async (req, res) => {
 
 export const upcomingRemainder = async (req, res) => {
 
+    const todayDate = new Date()
+
+    const sevenDaysLater = new Date()
+    sevenDaysLater.setDate(todayDate.getDate() + 6)
+
+
     console.log("Logged Agent ID:", req.agent.agentId);
     // finding the details of all the policies which have due in this week
     const todayPolicies = await Policy.find({ agentId: req.agent.agentId, nextPaymentDate: { $gte: todayDate, $lte: sevenDaysLater } }).populate("clientId").sort({ nextPaymentDate: 1 })
-    console.log("todayPolicies data are: ", todayPolicies)
 
     // console.log("details of all the policies which have due in this week: ", todayPolicies)
 
@@ -155,9 +157,9 @@ export const pendingTask = async (req, res) => {
 
     try {
         // here populating is done to fetch the PDF name from the other schema to show in UI
-        const pending = await jobStatus.find({agentId: req.agent.agentId, verification: "pending"}).populate("fileId")
+        const pending = await jobStatus.find({ agentId: req.agent.agentId, verification: "pending" }).populate("fileId")
         console.log("pending task are: ", pending)
-    
+
         return res.status(200).json({
             success: true,
             pending: pending
@@ -169,7 +171,7 @@ export const pendingTask = async (req, res) => {
             error: error.message
         })
     }
-} 
+}
 
 
 
@@ -201,7 +203,7 @@ export const pendingTaskResult = async (req, res) => {
 export const deleteTask = async (req, res) => {
     const { jobId } = req.params
 
-    const task = await jobStatus.findByIdAndDelete({ _id: jobId})
+    const task = await jobStatus.findByIdAndDelete({ _id: jobId })
     console.log("deleted task from the jobStatus table is: ", task)
 
     return res.status(200).json({

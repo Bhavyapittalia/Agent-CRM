@@ -67,7 +67,6 @@ const AddPolicy = () => {
     }
 
 
-
     // this function for uploading pdf
     const uploadPdf = async (selectedFile) => {
 
@@ -249,9 +248,8 @@ const AddPolicy = () => {
 
                         <div className="mt-2 h-px w-full bg-blue-100"></div>
 
-                        <form onSubmit={addPolicy} className="space-y-6">
+                        <form onSubmit={addPolicy} className="space-y-5 max-h-[500px] overflow-y-hidden">
 
-                            {/* PDF Upload */}
                             <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 mt-1">
                                 <label className="text-sm font-medium text-black">
                                     Upload Policy PDF
@@ -284,7 +282,6 @@ const AddPolicy = () => {
                             </div>
 
 
-                            {/* Policy Number - Center */}
                             <div className="flex justify-center">
                                 <div className="w-full max-w-sm">
                                     <label className="text-sm font-medium text-black">
@@ -303,10 +300,8 @@ const AddPolicy = () => {
                             </div>
 
 
-                            {/* Other Fields */}
                             <div className="grid grid-cols-2 gap-x-8 gap-y-5">
 
-                                {/* Customer ID */}
                                 <div>
                                     <label className="text-sm font-medium text-black">
                                         Customer ID

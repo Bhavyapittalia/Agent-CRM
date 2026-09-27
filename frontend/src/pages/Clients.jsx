@@ -30,13 +30,11 @@ const Clients = () => {
 
             // 2nd method to call an API
             api.get("/client").then((response) => {
-                console.log("clients API response is: ", response.data)
                 const clients = response.data.clients
                 setClient(clients)
             })
             
             api.get("/client/upcoming-premium").then((response) => {
-                console.log("upcoming premium API response is:", response.data)
                 setClientUpcomingPolicy(response.data.upcomingPremiums)
             })
 
@@ -57,7 +55,6 @@ const Clients = () => {
             console.log("error is: ", error.message)
         }
     }
-    console.log("this client upcoming policy is: ", clientUpcomingPolicy)
 
     const [searchItem, setSearchItem] = useState("")
 
@@ -87,10 +84,7 @@ const Clients = () => {
 
         try {
             // this API right now is just updating the "pin" status in DB
-            console.log("you clicked pin...")
-            console.log("client id is: ", clientId)
             await api.put(`/client/${clientId}/pin`)
-            console.log("API runned....")
             getClients()
         }
         catch (error) {

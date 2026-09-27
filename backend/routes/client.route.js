@@ -1,6 +1,8 @@
 import express from 'express'
 import { checkClientOwnership, checkToken } from '../middleware/agent.auth.js'
 import { addClient, getClientById, getClients, getUpcomingPremium, pinnedClient, searchClient, updateClient } from '../controller/client.controller.js'
+import { pdfUpload } from '../middleware/pdf.upload.js'
+import { extractMonthlyPdf, getMonthlyPdfResult, getMonthlyPdfStatus, uploadMonthlyPdf } from '../controller/monthly.import.controller.js'
 
 const client_router = express.Router()
 
@@ -18,5 +20,13 @@ client_router.get('/:clientId', checkToken, getClientById)
 
 client_router.put('/:clientId/pin', checkToken, pinnedClient)
 
+
+client_router.post('/monthly-import', checkToken, pdfUpload.single("monthlyPdf"), uploadMonthlyPdf)
+
+client_router.post('/monthly-import/extract-pdf', checkToken, extractMonthlyPdf)
+
+client_router.get('/monthly-import/status/:pdfId', checkToken, getMonthlyPdfStatus)
+
+client_router.get('/monthly-import/result/:pdfId', checkToken, getMonthlyPdfResult)
 
 export default client_router

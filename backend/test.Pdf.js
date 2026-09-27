@@ -32,3 +32,6 @@ const waiter = () => {
 
 customer()
 waiter()
+
+
+// I have implemented that table and it's data is coming properly but the problem is that I still don't like that UI in the table format and also when I am changing into it's to modify data it's not working properly and also make another UI like "when agent extract PDF" if and PDF contains 20 clients data then user will verify each client data sepratly and after clicking next btn it will go to verify the next client data 

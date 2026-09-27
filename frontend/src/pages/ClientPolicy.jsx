@@ -59,12 +59,10 @@ const ClientPolicy = () => {
         const response = await api.put(`/client/${id}/edit-client`, { name: client.name, email: client.email, whatsappNumber: client.whatsappNumber, dateOfBirth: client.dateOfBirth })
 
         toast.success("client updated successfully!")
-        console.log("updated client data is: ", response.data)
     }
 
     // delete policy 
     const handleDelete = async (policyId) => {
-        console.log("handle delete got this id: ", policyId)
 
         const response = await api.delete(`/policy/delete-policy/${policyId}`)
 

@@ -41,7 +41,6 @@ const PolicyList = () => {
             setFileteredClient(response.data.thisWeekPoliciesData)
         }
     }
-    console.log("response data for the search data is: ", policies)
 
     const debouncedSearch = useDebounce(searchItem, 500)
 
@@ -56,11 +55,10 @@ const PolicyList = () => {
         }
 
         const response = await api.get(`/policy/filter/client?name=${debouncedSearch}&type=${search}`)
-        console.log("clients are: ", response.data.filteredClient)
+        
         setFileteredClient(response.data.filteredClient)
     }
 
-    console.log("search FILTERED data is: ", filteredClient)
 
     // useEffect(() => {
     //     getPolicies()

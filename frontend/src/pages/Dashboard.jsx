@@ -39,7 +39,6 @@ const Dashboard = () => {
 
 
             if (premiumData.status === 'fulfilled' && premiumData.value) {
-                console.log("api status is correct")
                 setPremiumData(premiumData.value.data.formattedData);
             }
 
@@ -48,7 +47,6 @@ const Dashboard = () => {
             }
 
             if (upcomingRemainder.status === 'fulfilled' && upcomingRemainder.value) {
-                console.log("second api status is also correct", upcomingRemainder.value.data.policyInfo)
                 setThisWeekRemainder(upcomingRemainder.value.data.policyInfo)
             }
 
@@ -69,7 +67,6 @@ const Dashboard = () => {
         catch (error) {
             console.log("error occured", error.response)
             console.log("error occured", error.message)
-            console.log("error occured", error.response.data)
         }
     }
 
@@ -109,7 +106,6 @@ const Dashboard = () => {
 
     const pending = async () => {
         const pendingWork = await api.get(`/dashboard/pending-task`)
-        console.log("pending data:", pendingWork.data);
 
         const task = pendingWork.data.pending
         setPendingTask(task)

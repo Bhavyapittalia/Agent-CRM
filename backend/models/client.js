@@ -8,12 +8,11 @@ const clientSchema = new mongoose.Schema({
 
     email: {
         type: String,
-        required: true
+        trim: true
     },
 
     dateOfBirth: {
-        type: Date,
-        required: true,
+        type: Date
     },
 
     profilePhoto: {

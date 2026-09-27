@@ -44,7 +44,6 @@ const MorePolicyDetail = () => {
 
             setPolicy({ ...response.data.policy, nextPaymentDate: formatDate(response.data.policy.nextPaymentDate), lastPremiumPaidDate: formatDate(response.data.policy.lastPremiumPaidDate) })
 
-            console.log("before updated policy data: ", response.data.policy)
 
         } catch (error) {
             console.log(error.response.data);
@@ -64,8 +63,6 @@ const MorePolicyDetail = () => {
             const response = await api.patch(`/policy/more-info/${id}/edit`, { policyNumber: policy.policyNumber, policyName: policy.policyName, planType: policy.planType, policyStatus: policy.policyStatus,  nextPaymentDate: formatDate(policy.nextPaymentDate), lastPremiumPaidDate: formatDate(policy.lastPremiumPaidDate), policyStartDate: formatDate(policy.policyStartDate) })
 
             setPolicy({...response.data.policy, nextPaymentDate: formatDate(response.data.policy.nextPaymentDate), lastPremiumPaidDate: formatDate(response.data.policy.lastPremiumPaidDate), policyStartDate: formatDate(response.data.policy.policyStartDate), policyMaturityDate: formatDate(response.data.policy.policyMaturityDate) });
-    
-            console.log("updated policy details are: ", response.data.policy)
     
             toast.success("policy updated successfully")
         }

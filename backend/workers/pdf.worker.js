@@ -5,6 +5,8 @@ import { parsePdfText } from "../helpers/pdf.parse.js";
 import { niaPolicyData } from "../services/nia.policy.extractor.js";
 import dotenv from "dotenv";
 import connectDB from "../config/db.js";
+import { MonthlyData } from "../models/sheet.js";
+import { monthlyPolicyData } from "../services/monthly.policy.extractor.js";
 
 dotenv.config();
 
@@ -22,31 +24,66 @@ const worker = new Worker(
     async (job) => {
         console.log("Processing job:", job.id);
         console.log("Job data:", job.data);
-        
+
+        const { type, pdfId, filePath, importId } = job.data
         try {
-            
-            const second = Math.floor(Math.random() * 5000) + 2000
-            console.log(second)
-            // getting the PDF.ID AND FILE_PATH
-            const { pdfId, filePath } = job.data
 
-            // updatting the shcema to the processing
-            await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'processing' })
+            if (type === "nia-policy") {
+                const second = Math.floor(Math.random() * 5000) + 2000
+                console.log(second)
+                // getting the PDF.ID AND FILE_PATH
 
-            await new Promise((res) => setTimeout(res, second))
+                // updatting the shcema to the processing
+                await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'processing' })
 
-            // extracting the text from the PDF
-            const text = await parsePdfText(filePath)
+                await new Promise((res) => setTimeout(res, second))
 
-            // extracting the information from the parsed text
-            const policyData = niaPolicyData(text)
-            console.log("extracted policy data is: ", policyData)
+                // extracting the text from the PDF
+                const text = await parsePdfText(filePath)
 
-            // again updating the DB to the 'complete' status after extracted information
-            // and also putting the "policyData" into DB
-            await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'completed', result: policyData })
+                // extracting the information from the parsed text
+                const policyData = niaPolicyData(text)
+                console.log("extracted policy data is: ", policyData)
 
-            return policyData
+                // again updating the DB to the 'complete' status after extracted information
+                // and also putting the "policyData" into DB
+                await jobStatus.findOneAndUpdate({ fileId: pdfId }, { status: 'completed', result: policyData })
+
+                return policyData
+            }
+
+            if (type === "monthly-import") {
+
+                console.log("monthly pdf extraction is started")
+
+                // marking the monthlyData and the JobStatus to the "processing" as the job is under way
+                await MonthlyData.findByIdAndUpdate(importId, { status: "processing" })
+                await jobStatus.findOneAndUpdate(
+                    { fileId: pdfId },
+                    { status: "processing" }
+                )
+
+                console.log("file path is: ", filePath)
+                const text = await parsePdfText(filePath)
+
+                const monthlyRecords = monthlyPolicyData(text)
+
+                // marking the monthlyData status to "completed" and also inserting all clients data into DB
+                await MonthlyData.findByIdAndUpdate(importId, { record: monthlyRecords, status: "completed", totalClient: monthlyRecords.length })
+                await jobStatus.findOneAndUpdate(
+                    { fileId: pdfId },
+                    {
+                        status: "completed",
+                        result: monthlyRecords
+                    }
+                )
+
+
+                console.log("MONTHLY RECORDS:")
+                console.log(monthlyRecords)
+
+                return monthlyRecords
+            }
         }
         catch (error) {
             console.log("error occured IN WORKER")
